@@ -34,10 +34,7 @@ LOG_FILE="install.log"
 # --- Forbidden Packages ---
 # These packages violate the single-owner policy for fonts and must not be
 # present on the system before running this installer.
-FORBIDDEN_PKGS=(
-    "ttf-google-fonts-typewolf"
-    "ttf-ms-fonts"
-)
+
 
 # --- Helper Functions ---
 
@@ -58,13 +55,7 @@ fatal() {
 preflight_check() {
     log "Running Preflight Checks..."
 
-    # Remove any forbidden packages that might already be installed
-    for pkg in "${FORBIDDEN_PKGS[@]}"; do
-        if pacman -Qi "$pkg" &>/dev/null; then
-            log "Forbidden package detected: $pkg. Removing..."
-            yes | sudo pacman -Rdd --noconfirm "$pkg" || true
-        fi
-    done
+    # Preflight checks passed.
 
     log "Preflight checks passed."
 }

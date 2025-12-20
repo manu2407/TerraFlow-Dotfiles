@@ -11,6 +11,7 @@ set -euo pipefail
 # 3. One Owner:  Global resources (fonts, themes) have one explicit provider.
 #
 # WHY CERTAIN PACKAGES ARE FORBIDDEN:
+# Packages like 'ttf-google-fonts-typewolf' are meta-bundles that install
 # thousands of overlapping .ttf files. These conflict with explicit font
 # packages (e.g., ttf-opensans) that UI components may depend on.
 # The installer refuses to proceed on a system with such packages to prevent
@@ -34,6 +35,7 @@ LOG_FILE="install.log"
 # These packages violate the single-owner policy for fonts and must not be
 # present on the system before running this installer.
 FORBIDDEN_PKGS=(
+    "ttf-google-fonts-typewolf"
     "ttf-ms-fonts"
 )
 
@@ -59,17 +61,27 @@ preflight_check() {
     # 1. Check for forbidden packages
     for pkg in "${FORBIDDEN_PKGS[@]}"; do
         if pacman -Qi "$pkg" &>/dev/null; then
-            fatal "Forbidden package detected: $pkg
-
-System state violates installer policy.
-This package conflicts with explicit font packages required by this dotfile setup.
-
-To proceed, you must manually remove it:
-  sudo pacman -Rns $pkg
-
-Then re-run this installer."
+            log "Forbidden package detected: $pkg. Removing..."
+            sudo pacman -Rns --noconfirm "$pkg" || fatal "Failed to remove forbidden package: $pkg"
         fi
     done
+
+    # 2. Verify pacman.conf IgnorePkg rule
+    # This prevents AUR packages from pulling in forbidden dependencies.
+    local pacman_conf="/etc/pacman.conf"
+    local ignore_rule="IgnorePkg.*ttf-google-fonts-typewolf"
+
+    if ! grep -qE "$ignore_rule" "$pacman_conf"; then
+        fatal "Pacman policy is not configured.
+
+The installer requires that forbidden packages be blocked at the package manager level.
+This prevents AUR dependencies from re-introducing them.
+
+To proceed, add the following line to your /etc/pacman.conf (in the [options] section):
+  IgnorePkg = ttf-google-fonts-typewolf
+
+Then re-run this installer."
+    fi
 
     log "Preflight checks passed."
 }

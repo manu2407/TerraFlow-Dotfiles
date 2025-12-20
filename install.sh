@@ -6,21 +6,38 @@ set -euo pipefail
 # ==============================================================================
 #
 # PHILOSOPHY:
-# 1. Authoritative: This script enforces state. It does not ask questions.
-# 2. Idempotent: Safe to run multiple times. Skips installed packages.
-# 3. Robust: Fails early on errors. Resolves conflicts aggressively.
+# 1. Determinism: This script either succeeds cleanly or fails early.
+# 2. Fail Loudly: Policy violations cause immediate abort, not auto-healing.
+# 3. One Owner:  Global resources (fonts, themes) have one explicit provider.
 #
-# STRUCTURE:
-# 1. Preflight Checks & Conflict Removal
-# 2. Core System Utilities
-# 3. Fonts (Must be before UI)
-# 4. UI / Shell / GTK Components
-# 5. Optional Extras
-# 6. Configuration & Services
+# WHY CERTAIN PACKAGES ARE FORBIDDEN:
+# Packages like 'ttf-google-fonts-typewolf' are meta-bundles that install
+# thousands of overlapping .ttf files. These conflict with explicit font
+# packages (e.g., ttf-opensans) that UI components may depend on.
+# The installer refuses to proceed on a system with such packages to prevent
+# unpredictable file-conflict errors during installation.
+#
+# WHY FONTS ARE HANDLED EXPLICITLY:
+# Fonts must be installed BEFORE any UI component that depends on them.
+# Implicit font installation via dependencies is forbidden because it hides
+# ownership and introduces silent conflicts.
+#
+# WHY THE INSTALLER REFUSES TO AUTO-HEAL:
+# Automatically removing packages is dangerous. It may break other software
+# the user has installed. The user MUST manually audit and remove the
+# conflicting package to acknowledge they understand the consequences.
 #
 # ==============================================================================
 
 LOG_FILE="install.log"
+
+# --- Forbidden Packages ---
+# These packages violate the single-owner policy for fonts and must not be
+# present on the system before running this installer.
+FORBIDDEN_PKGS=(
+    "ttf-google-fonts-typewolf"
+    "ttf-ms-fonts"
+)
 
 # --- Helper Functions ---
 
@@ -29,14 +46,55 @@ log() {
     echo -e ":: $1" >> "$LOG_FILE"
 }
 
-error() {
-    echo -e "\033[0;31mERROR: $1\033[0m"
-    echo -e "ERROR: $1" >> "$LOG_FILE"
+fatal() {
+    echo -e "\033[0;31m[FATAL] $1\033[0m"
+    echo -e "[FATAL] $1" >> "$LOG_FILE"
     exit 1
 }
 
+# --- Preflight Checks ---
+# These checks MUST run before ANY package installation.
+
+preflight_check() {
+    log "Running Preflight Checks..."
+
+    # 1. Check for forbidden packages
+    for pkg in "${FORBIDDEN_PKGS[@]}"; do
+        if pacman -Qi "$pkg" &>/dev/null; then
+            fatal "Forbidden package detected: $pkg
+
+System state violates installer policy.
+This package conflicts with explicit font packages required by this dotfile setup.
+
+To proceed, you must manually remove it:
+  sudo pacman -Rns $pkg
+
+Then re-run this installer."
+        fi
+    done
+
+    # 2. Verify pacman.conf IgnorePkg rule
+    # This prevents AUR packages from pulling in forbidden dependencies.
+    local pacman_conf="/etc/pacman.conf"
+    local ignore_rule="IgnorePkg.*ttf-google-fonts-typewolf"
+
+    if ! grep -qE "$ignore_rule" "$pacman_conf"; then
+        fatal "Pacman policy is not configured.
+
+The installer requires that forbidden packages be blocked at the package manager level.
+This prevents AUR dependencies from re-introducing them.
+
+To proceed, add the following line to your /etc/pacman.conf (in the [options] section):
+  IgnorePkg = ttf-google-fonts-typewolf
+
+Then re-run this installer."
+    fi
+
+    log "Preflight checks passed."
+}
+
 # Safe Install Function
-# Uses 'yay' with --needed and --noconfirm to ensure idempotency and non-interactivity.
+# All package installs MUST go through this function.
 install_group() {
     local name="$1"
     shift
@@ -48,30 +106,56 @@ install_group() {
     fi
 
     log "Installing Group: $name..."
-    # We use 'yes' pipe to force acceptance of key imports or other prompts that --noconfirm might miss
-    # We use --overwrite '*' to bulldoze file conflicts
-    yes | yay -S --needed --noconfirm --overwrite '*' "${pkgs[@]}" || {
-        error "Failed installing $name"
+    yay -S --needed --noconfirm "${pkgs[@]}" || {
+        fatal "Failed installing group: $name"
     }
 }
 
-# --- 1. Preflight Checks ---
+# Post-Install Verification
+# Ensures no forbidden packages were sneaked in by AUR dependencies.
+postflight_check() {
+    log "Running Post-Install Verification..."
+    for pkg in "${FORBIDDEN_PKGS[@]}"; do
+        if pacman -Qi "$pkg" &>/dev/null; then
+            fatal "Post-install check failed: Forbidden package '$pkg' was installed.
+
+An AUR dependency likely pulled this package in despite the IgnorePkg rule.
+This is a critical failure. The system is now in a non-compliant state.
+
+Manual intervention is required:
+  1. Remove the package: sudo pacman -Rns $pkg
+  2. Investigate which AUR package caused this.
+  3. Consider adding explicit conflicts to pacman.conf."
+        fi
+    done
+    log "Post-install verification passed."
+}
+
+
+# ==============================================================================
+# EXECUTION
+# ==============================================================================
 
 log "Starting TerraFlow Installation..."
 
+# --- 0. Preflight (MUST BE FIRST) ---
+preflight_check
+
 # Check Distro
 if ! grep -q "Arch" /etc/os-release && ! grep -q "CachyOS" /etc/os-release; then
-    error "This script is intended for Arch Linux or CachyOS."
+    fatal "This script is intended for Arch Linux or CachyOS."
 fi
 
 # Setup AUR Helper (yay)
 if ! command -v yay &> /dev/null; then
     if command -v paru &> /dev/null; then
         log "Using paru as AUR helper."
-        alias yay='paru'
+        # Create an alias for this script's session
+        yay() { paru "$@"; }
+        export -f yay
     else
         log "No AUR helper found. Installing yay..."
-        yes | sudo pacman -S --needed git base-devel --noconfirm --overwrite '*'
+        sudo pacman -S --needed git base-devel --noconfirm
         git clone https://aur.archlinux.org/yay.git
         cd yay
         makepkg -si --noconfirm
@@ -80,32 +164,15 @@ if ! command -v yay &> /dev/null; then
     fi
 fi
 
-# Conflict Removal Logic
-# We aggressively remove known conflicting packages to prevent installation failures.
-FORBIDDEN_PKGS=(
-    "ttf-google-fonts-typewolf"
-    "ttf-ms-fonts"
-    "timeshift" # Explicitly removed as per user request
-)
-
-log "Checking for forbidden packages..."
-for pkg in "${FORBIDDEN_PKGS[@]}"; do
-    if pacman -Qi "$pkg" &>/dev/null; then
-        log "Removing conflicting package: $pkg"
-        sudo pacman -Rns --noconfirm "$pkg" || true
-    fi
-done
-
-# Update System First
+# Update System
 log "Updating system..."
-yes | sudo pacman -Syu --noconfirm --overwrite '*' || error "Failed to update system."
+sudo pacman -Syu --noconfirm || fatal "Failed to update system."
 
 
-# --- 2. Package Definitions ---
+# --- Package Definitions ---
 
-# Core System & Hardware
+# Core System & Hardware (Order: 1)
 CORE_PKGS=(
-    # Window Manager & Core
     "hyprland"
     "xdg-desktop-portal-hyprland"
     "xdg-desktop-portal-gtk"
@@ -113,8 +180,6 @@ CORE_PKGS=(
     "hyprlock"
     "hypridle"
     "swww"
-    
-    # Connectivity & Audio
     "network-manager-applet"
     "blueman"
     "bluez"
@@ -125,8 +190,6 @@ CORE_PKGS=(
     "wireplumber"
     "pavucontrol"
     "brightnessctl"
-    
-    # Files & Archives
     "thunar"
     "thunar-archive-plugin"
     "file-roller"
@@ -137,15 +200,11 @@ CORE_PKGS=(
     "gvfs-mtp"
     "tumbler"
     "ffmpegthumbnailer"
-    
-    # Clipboard & Screenshots
     "wl-clipboard"
     "cliphist"
     "grim"
     "slurp"
     "swappy"
-    
-    # CLI Tools
     "fish"
     "starship"
     "neovim"
@@ -161,7 +220,8 @@ CORE_PKGS=(
     "wtype"
 )
 
-# Fonts (Strict Policy: Single-owner packages only)
+# Fonts (Order: 2 - MUST be before UI)
+# Explicit font ownership. No meta-bundles allowed.
 FONT_PKGS=(
     "ttf-inter"
     "ttf-iosevka-nerd"
@@ -170,7 +230,7 @@ FONT_PKGS=(
     "noto-fonts-emoji"
 )
 
-# UI Components (Must be installed AFTER fonts)
+# UI Components (Order: 3 - After fonts)
 UI_PKGS=(
     "waybar"
     "dunst"
@@ -182,12 +242,12 @@ UI_PKGS=(
     "aylurs-gtk-shell-git"
     "rofi-wayland"
     "wlogout"
-    "kitty" # Terminal is UI
+    "kitty"
     "mpv"
     "imv"
 )
 
-# Optional Extras
+# Optional Extras (Order: 4)
 EXTRA_PKGS=(
     "zen-browser-bin"
     "obsidian"
@@ -201,7 +261,7 @@ EXTRA_PKGS=(
 )
 
 
-# --- 3. Installation Execution ---
+# --- Installation ---
 
 install_group "Core System" "${CORE_PKGS[@]}"
 install_group "Fonts" "${FONT_PKGS[@]}"
@@ -209,7 +269,11 @@ install_group "UI Components" "${UI_PKGS[@]}"
 install_group "Extras" "${EXTRA_PKGS[@]}"
 
 
-# --- 4. Configuration & Services ---
+# --- Post-Install Verification ---
+postflight_check
+
+
+# --- Configuration & Services ---
 
 log "Setting up Docker..."
 sudo systemctl enable docker || true
@@ -220,25 +284,18 @@ log "Linking configurations..."
 CONFIG_DIR="$HOME/.config"
 mkdir -p "$CONFIG_DIR"
 
-# List of configs to link
 CONFIGS=("hypr" "waybar" "ags" "nwg-drawer" "kitty" "fish" "sddm" "yazi" "lazygit" "mpv")
 
 for config in "${CONFIGS[@]}"; do
-    if [ -d "$CONFIG_DIR/$config" ]; then
-        # Only backup if it's not already a symlink to our repo
-        if [ ! -L "$CONFIG_DIR/$config" ]; then
-            log "Backing up existing $config..."
-            mv "$CONFIG_DIR/$config" "$CONFIG_DIR/${config}.bak"
-        fi
+    if [ -d "$CONFIG_DIR/$config" ] && [ ! -L "$CONFIG_DIR/$config" ]; then
+        log "Backing up existing $config..."
+        mv "$CONFIG_DIR/$config" "$CONFIG_DIR/${config}.bak"
     fi
-    # Force link
     ln -sf "$(pwd)/configs/$config" "$CONFIG_DIR/$config"
 done
 
-# Link Starship
 ln -sf "$(pwd)/configs/starship.toml" "$CONFIG_DIR/starship.toml"
 
-# Link Terra Store
 mkdir -p "$HOME/.local/bin"
 ln -sf "$(pwd)/scripts/terra-store" "$HOME/.local/bin/terra-store"
 
@@ -246,18 +303,17 @@ log "Enabling services..."
 sudo systemctl enable sddm || true
 sudo systemctl enable bluetooth || true
 
-# --- 5. Post-Install Assets ---
+
+# --- Assets ---
 
 install_assets() {
     log "Starting Asset Installation..."
     mkdir -p "$HOME/.local/share/fonts"
     mkdir -p "$HOME/.local/share/backgrounds/terra"
     
-    # Wallpaper
     WALLPAPER_URL="https://raw.githubusercontent.com/LpCodes/wallpaper/master/Abstract/topography.png"
     wget -q --show-progress -O "$HOME/.local/share/backgrounds/terra/wallpaper.png" "$WALLPAPER_URL" || true
 
-    # Blur generation
     if command -v magick &> /dev/null; then
         magick "$HOME/.local/share/backgrounds/terra/wallpaper.png" \
         -blur 0x25 \
@@ -269,7 +325,8 @@ install_assets() {
 
 install_assets
 
-# --- 6. Finalize ---
+
+# --- Finalize ---
 
 log "Applying GTK theme..."
 nwg-look -a || true

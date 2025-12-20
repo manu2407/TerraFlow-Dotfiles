@@ -72,6 +72,7 @@ preflight_check() {
 # Safe Install Function
 # All package installs MUST go through this function.
 # Uses --overwrite '*' to bulldoze through any file conflicts.
+# Uses yay flags to skip optional dependencies and avoid prompts.
 install_group() {
     local name="$1"
     shift
@@ -83,7 +84,16 @@ install_group() {
     fi
 
     log "Installing Group: $name..."
-    yes | yay -S --needed --noconfirm --overwrite '*' "${pkgs[@]}" || {
+    # --noconfirm: skip confirmation prompts
+    # --needed: skip already installed packages
+    # --overwrite '*': bulldoze file conflicts
+    # --answerdiff None: don't show diffs
+    # --answerclean None: don't clean build files
+    # --answeredit None: don't edit PKGBUILDs
+    # --noupgrademenu: skip upgrade menu
+    yay -S --needed --noconfirm --overwrite '*' \
+        --answerdiff None --answerclean None --answeredit None \
+        --noupgrademenu "${pkgs[@]}" || {
         fatal "Failed installing group: $name"
     }
 }

@@ -1,5 +1,4 @@
-/* TerraFlow Obsidian Glass - Waybar Theme */
-/* A premium glassmorphism theme */
+/* TerraFlow Obsidian Glass - Detailed Waybar Theme */
 
 @define-color base #0d1117;
 @define-color surface #161b22;
@@ -18,7 +17,7 @@
     border-radius: 0;
     font-family: "Inter", "Iosevka Nerd Font", sans-serif;
     font-size: 13px;
-    font-weight: 500;
+    font-weight: 600;
     min-height: 0;
     transition: all 0.2s ease;
 }
@@ -32,14 +31,14 @@ window#waybar {
     background: alpha(@base, 0.85);
     border: 1px solid alpha(@border, 0.5);
     border-radius: 12px;
-    padding: 0 4px;
+    padding: 0 6px;
     margin: 4px 0 4px 4px;
 }
 
 #custom-launcher {
-    font-size: 18px;
+    font-size: 20px;
     color: @accent;
-    padding: 0 14px;
+    padding: 2px 14px 2px 10px;
     margin: 4px 2px;
     border-radius: 8px;
 }
@@ -68,12 +67,20 @@ window#waybar {
 #workspaces button.active {
     color: @base;
     background: linear-gradient(135deg, @accent 0%, @accent_alt 100%);
-    font-weight: 600;
+    font-weight: 700;
+    box-shadow: 0 2px 8px alpha(@accent, 0.3);
 }
 
 #workspaces button.urgent {
     color: @base;
     background: @error;
+}
+
+#window {
+    color: @text;
+    padding: 0 12px;
+    font-weight: 600;
+    opacity: 0.8;
 }
 
 /* === CENTER MODULES === */
@@ -88,7 +95,8 @@ window#waybar {
 #clock {
     color: @text;
     padding: 4px 8px;
-    font-weight: 600;
+    font-size: 14px;
+    font-weight: 700;
 }
 
 /* === RIGHT MODULES === */
@@ -96,11 +104,41 @@ window#waybar {
     background: alpha(@base, 0.85);
     border: 1px solid alpha(@border, 0.5);
     border-radius: 12px;
-    padding: 0 4px;
+    padding: 0 6px;
     margin: 4px 4px 4px 0;
 }
 
-#tray,
+#tray {
+    padding: 0 12px;
+    margin: 4px 2px;
+}
+
+/* Hardware Group Styling */
+#hardware {
+    background: alpha(@surface, 0.5);
+    border-radius: 8px;
+    margin: 4px 6px;
+    padding: 2px 6px;
+    border: 1px solid alpha(@border, 0.3);
+}
+
+#cpu,
+#memory,
+#temperature,
+#disk {
+    color: @text_dim;
+    padding: 2px 8px;
+    border-radius: 6px;
+}
+
+#cpu:hover,
+#memory:hover,
+#temperature:hover,
+#disk:hover {
+    background: alpha(@text, 0.1);
+    color: @text;
+}
+
 #pulseaudio,
 #network,
 #battery {
@@ -110,7 +148,6 @@ window#waybar {
     border-radius: 8px;
 }
 
-#tray:hover,
 #pulseaudio:hover,
 #network:hover,
 #battery:hover {
@@ -147,7 +184,7 @@ window#waybar {
 }
 
 #custom-power {
-    font-size: 16px;
+    font-size: 18px;
     color: @error;
     padding: 4px 14px;
     margin: 4px 2px;
@@ -158,11 +195,14 @@ window#waybar {
     background: alpha(@error, 0.15);
 }
 
-/* Tray Menu */
-#tray>.passive {
-    -gtk-icon-effect: dim;
+/* Tooltip Styling */
+tooltip {
+    background: alpha(@base, 0.95);
+    border: 1px solid @border;
+    border-radius: 12px;
 }
 
-#tray>.needs-attention {
-    -gtk-icon-effect: highlight;
+tooltip label {
+    color: @text;
+    padding: 8px;
 }

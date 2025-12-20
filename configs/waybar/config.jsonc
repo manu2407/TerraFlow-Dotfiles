@@ -1,25 +1,29 @@
 {
     "layer": "top",
     "position": "top",
-    "height": 40,
-    "margin-top": 8,
-    "margin-left": 12,
-    "margin-right": 12,
+    "height": 44,
+    "margin-top": 6,
+    "margin-left": 10,
+    "margin-right": 10,
     "spacing": 0,
+    // Load Modules
     "modules-left": [
         "custom/launcher",
-        "hyprland/workspaces"
+        "hyprland/workspaces",
+        "hyprland/window"
     ],
     "modules-center": [
         "clock"
     ],
     "modules-right": [
         "tray",
+        "group/hardware",
         "pulseaudio",
         "network",
         "battery",
         "custom/power"
     ],
+    // --- MODULES CONFIGURATION ---
     "custom/launcher": {
         "format": "󰣇",
         "on-click": "nwg-drawer",
@@ -41,6 +45,11 @@
             "*": 5
         }
     },
+    "hyprland/window": {
+        "format": "{}",
+        "max-length": 40,
+        "separate-outputs": true
+    },
     "clock": {
         "format": "󰥔  {:%H:%M}",
         "format-alt": "󰃭  {:%A, %B %d}",
@@ -51,12 +60,42 @@
             }
         }
     },
+    // Group Hardware (CPU, RAM, Disk, Temp)
+    "group/hardware": {
+        "orientation": "horizontal",
+        "modules": [
+            "cpu",
+            "memory",
+            "temperature",
+            "disk"
+        ]
+    },
+    "cpu": {
+        "format": "󰍛 {usage}%",
+        "interval": 2,
+        "on-click": "kitty --class system_monitor -e btop"
+    },
+    "memory": {
+        "format": "󰘚 {percentage}%",
+        "interval": 2,
+        "on-click": "kitty --class system_monitor -e btop"
+    },
+    "temperature": {
+        "critical-threshold": 80,
+        "format": "󰔏 {temperatureC}°C",
+        "on-click": "kitty --class system_monitor -e btop"
+    },
+    "disk": {
+        "format": "󰋊 {percentage_used}%",
+        "path": "/",
+        "on-click": "thunar"
+    },
     "tray": {
-        "icon-size": 16,
+        "icon-size": 18,
         "spacing": 8
     },
     "pulseaudio": {
-        "format": "{icon}  {volume}%",
+        "format": "{icon} {volume}%",
         "format-muted": "󰖁",
         "format-icons": {
             "default": [
@@ -76,9 +115,9 @@
         "on-click": "nm-connection-editor"
     },
     "battery": {
-        "format": "{icon}  {capacity}%",
-        "format-charging": "󰂄  {capacity}%",
-        "format-plugged": "󰚥  {capacity}%",
+        "format": "{icon} {capacity}%",
+        "format-charging": "󰂄 {capacity}%",
+        "format-plugged": "󰚥 {capacity}%",
         "format-icons": [
             "󰂎",
             "󰁺",

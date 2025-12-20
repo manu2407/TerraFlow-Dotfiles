@@ -24,7 +24,7 @@ fi
 
 # 2. Update System
 log "Updating system..."
-sudo pacman -Syu --noconfirm || error "Failed to update system."
+yes | sudo pacman -Syu --noconfirm --overwrite '*' || error "Failed to update system."
 
 # 3. Install Packages
 log "Installing packages from packages.txt..."
@@ -36,7 +36,7 @@ elif command -v paru &> /dev/null; then
     AUR_HELPER="paru"
 else
     log "No AUR helper found. Installing yay..."
-    sudo pacman -S --needed git base-devel --noconfirm
+    yes | sudo pacman -S --needed git base-devel --noconfirm --overwrite '*'
     git clone https://aur.archlinux.org/yay.git
     cd yay
     makepkg -si --noconfirm
@@ -49,7 +49,7 @@ fi
 if [ -f "packages.txt" ]; then
     # Install packages using the helper
     # We use sed to strip comments (#...) and empty lines
-    $AUR_HELPER -S --needed $(sed 's/#.*//' packages.txt) --noconfirm || error "Failed to install packages."
+    yes | $AUR_HELPER -S --needed --noconfirm --overwrite '*' $(sed 's/#.*//' packages.txt) || error "Failed to install packages."
 else
     error "packages.txt not found!"
 fi

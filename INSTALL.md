@@ -1,4 +1,4 @@
-# Installation Guide for TerraFlow
+i# Installation Guide for TerraFlow
 
 This guide provides detailed instructions on how to install and set up the TerraFlow dotfiles on your system.
 

@@ -75,7 +75,6 @@ lazydocker
 distrobox
 code
 lazygit
-timeshift
 hyprshot
 gum
 imagemagick

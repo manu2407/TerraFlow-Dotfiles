@@ -1,0 +1,19 @@
+window {
+    background-color: rgba(30, 30, 46, 0.6);
+    color: #e1e4e8;
+}
+
+/* Grid layout is handled by nwg-drawer logic, css handles styling */
+button {
+    border: none;
+    background: none;
+}
+
+button:hover {
+    background-color: rgba(152, 195, 121, 0.3);
+}
+
+/* Hide labels if possible via CSS, otherwise relies on nwg-drawer arguments */
+label {
+    opacity: 0;
+}

@@ -1,0 +1,87 @@
+# --- 1. CORE DESKTOP (The Visuals) ---
+hyprland                  # The Window Manager
+xdg-desktop-portal-hyprland # Required for Screen Sharing & OBS
+xdg-desktop-portal-gtk    # Required for File Dialogs (Save/Open)
+waybar                    # The Bar
+sddm                      # Login Screen
+hyprlock                  # Lock Screen
+hypridle                  # Auto-Sleep Daemon
+swww                      # Wallpaper Daemon
+dunst                     # Notifications (or swaync)
+polkit-gnome              # Password Popup for GUI Apps
+
+# --- 2. CONNECTIVITY & AUDIO (The Hardware) ---
+network-manager-applet    # Wifi Tray Icon
+blueman                   # Bluetooth Manager GUI
+bluez                     # Bluetooth Driver
+bluez-utils               # Bluetooth CLI tools
+pipewire                  # Modern Audio Server
+pipewire-pulse            # Compatibility for PulseAudio apps
+pipewire-alsa             # Compatibility for ALSA apps
+wireplumber               # Audio Session Manager
+pavucontrol               # Volume Control Mixer (Essential)
+brightnessctl             # Laptop Screen Brightness Control
+
+# --- 3. FILES & ARCHIVES (The Management) ---
+thunar                    # GUI File Manager
+thunar-archive-plugin     # Right-click -> Extract Here
+file-roller               # Archive Manager GUI
+unzip                     # Zip support
+p7zip                     # 7z support
+unrar                     # Rar support
+gvfs                      # USB/Trash/Network Drive support
+gvfs-mtp                  # Android Phone File Support
+tumbler                   # Image thumbnails service
+ffmpegthumbnailer         # Video thumbnails service
+
+# --- 4. FONTS & APPEARANCE (The Look) ---
+ttf-inter                 # Clean UI Font
+ttf-iosevka-nerd          # Terminal/Icon Font
+noto-fonts                # Standard fallback fonts
+noto-fonts-cjk            # Chinese/Japanese/Korean text support (Crucial)
+noto-fonts-emoji          # Emoji support (Color emojis)
+nwg-look                  # GTK Theme Changer
+qt5ct                     # QT Theme Changer
+qt6ct                     # QT6 Theme Changer
+
+# --- 5. CLIPBOARD & SCREENSHOTS (The Tools) ---
+wl-clipboard              # Copy/Paste support for Wayland
+cliphist                  # Clipboard History Manager
+grim                      # Screenshot Tool
+slurp                     # Screen Selection Tool
+swappy                    # Screenshot Editor (Draw arrows/crop)
+
+# --- 6. THE "TERRA" APP SUITE (Your Special Apps) ---
+kitty                     # Terminal
+fish                      # Shell
+starship                  # Prompt
+mpv                       # Video Player
+imv                       # Image Viewer
+neovim                    # Text Editor
+btop                      # System Monitor
+fzf                       # Search Tool
+bat                       # Cat with colors
+eza                       # Ls with colors
+zoxide                    # Cd with intelligence
+
+# --- 7. EXTRAS (From previous phases) ---
+nwg-drawer
+aylurs-gtk-shell-git
+zen-browser-bin
+obsidian
+yazi
+docker
+lazydocker
+distrobox
+code
+lazygit
+timeshift
+hyprshot
+gum
+imagemagick
+wget
+wlogout
+cliphist
+rofi-wayland
+wtype
+jq

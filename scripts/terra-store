@@ -1,0 +1,68 @@
+#!/bin/bash
+
+# =========================================================
+#  TERRA STORE v1.0
+#  Custom TUI Installer for TerraFlow
+# =========================================================
+
+# --- 1. THEME CONFIGURATION (Terra Palette) ---
+COLOR_BG="#1f2428"
+COLOR_FG="#e1e4e8"
+COLOR_ACCENT="#98c379"  # Moss Green
+COLOR_SEC="#d19a66"     # Magma Orange
+
+# --- 2. THE ENTRY MENU (Using GUM) ---
+# This creates a beautiful "Button" style selection screen
+clear
+echo -e "\n"
+gum style \
+	--border double \
+	--margin "1 2" \
+	--padding "1 2" \
+	--border-foreground 114 \
+	"TERRA STORE | SYSTEM PACKAGE MANAGER"
+
+echo -e "Select your repository source:\n"
+CHOICE=$(gum choose --cursor.foreground 114 "1. Official Repos (Fast/Stable)" "2. AUR (Community/Custom)")
+
+# --- 3. THE LOGIC ---
+
+if [[ "$CHOICE" == *"Official"* ]]; then
+    # --- MODE A: OFFICIAL REPOS ---
+    # pacman -Slq : Lists all packages
+    # fzf : The interface
+    # preview : Runs 'pacman -Si' on the highlighted line instantly
+    
+    TARGET=$(pacman -Slq | fzf \
+        --prompt="SEARCH > " \
+        --pointer="➜" \
+        --marker="✓" \
+        --color=bg+:$COLOR_BG,bg:$COLOR_BG,spinner:$COLOR_ACCENT,hl:$COLOR_SEC \
+        --color=fg:$COLOR_FG,header:$COLOR_ACCENT,info:$COLOR_ACCENT,pointer:$COLOR_ACCENT \
+        --color=marker:$COLOR_ACCENT,fg+:$COLOR_FG,prompt:$COLOR_ACCENT,hl+:$COLOR_SEC \
+        --preview 'pacman -Si {} | bat --color=always -l yaml --theme="OneHalfDark"' \
+        --preview-window=right:55%:wrap:border-left \
+        --bind 'enter:accept' \
+        --header "ENTER: Install | ESC: Quit")
+
+    if [ -n "$TARGET" ]; then
+        gum confirm "Install $TARGET?" && sudo pacman -S "$TARGET"
+    fi
+
+elif [[ "$CHOICE" == *"AUR"* ]]; then
+    # --- MODE B: AUR ---
+    # paru -Slq : Lists AUR packages (cached)
+    
+    echo ":: Loading AUR database..."
+    TARGET=$(paru -Slq | fzf \
+        --prompt="SEARCH AUR > " \
+        --pointer="➜" \
+        --color=bg+:$COLOR_BG,bg:$COLOR_BG,spinner:$COLOR_ACCENT,hl:$COLOR_SEC \
+        --preview 'paru -Si {} | bat --color=always -l yaml --theme="OneHalfDark"' \
+        --preview-window=right:55%:wrap:border-left \
+        --header "ENTER: Build & Install | ESC: Quit")
+
+    if [ -n "$TARGET" ]; then
+        gum confirm "Build $TARGET?" && paru -S "$TARGET"
+    fi
+fi

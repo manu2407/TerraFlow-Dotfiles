@@ -1,0 +1,27 @@
+{
+    "layer": "top",
+    "position": "bottom",
+    "height": 30,
+    "margin-bottom": 10,
+    "modules-left": ["custom/launcher"],
+    "modules-center": ["wlr/taskbar"],
+    "modules-right": ["tray", "clock", "custom/hub"],
+    "custom/launcher": {
+        "format": "",
+        "on-click": "nwg-drawer",
+        "tooltip": false
+    },
+    "wlr/taskbar": {
+        "format": "{icon}",
+        "icon-size": 20,
+        "on-click": "activate"
+    },
+    "custom/hub": {
+        "format": "",
+        "on-click": "ags -t dashboard",
+        "tooltip": false
+    },
+    "clock": {
+        "format": "{:%H:%M}"
+    }
+}

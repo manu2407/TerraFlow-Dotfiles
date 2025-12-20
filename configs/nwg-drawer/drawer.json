@@ -1,0 +1,22 @@
+[
+    {
+        "label": "Lock",
+        "exec": "loginctl lock-session",
+        "icon": "system-lock-screen"
+    },
+    {
+        "label": "Logout",
+        "exec": "hyprctl dispatch exit",
+        "icon": "system-log-out"
+    },
+    {
+        "label": "Reboot",
+        "exec": "systemctl reboot",
+        "icon": "system-reboot"
+    },
+    {
+        "label": "Shutdown",
+        "exec": "systemctl poweroff",
+        "icon": "system-shutdown"
+    }
+]

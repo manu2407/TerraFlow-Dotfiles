@@ -1,0 +1,12 @@
+[opener]
+edit = [
+    { run = 'nvim "$@"', block = true, for = "unix" },
+]
+open = [
+    { run = 'xdg-open "$@"', desc = "Open" },
+]
+
+[plugin]
+prepend_previewers = [
+    { name = "*.md", run = "glow" },
+]

@@ -1,0 +1,51 @@
+* {
+    border: none;
+    border-radius: 0;
+    font-family: "Inter", sans-serif;
+    font-size: 14px;
+    min-height: 0;
+}
+
+window#waybar {
+    background: transparent;
+}
+
+.modules-left,
+.modules-center,
+.modules-right {
+    background-color: #1f2428;
+    /* Dark background for contrast, or transparent if preferred */
+    border: 2px solid #98c379;
+    /* Moss Green Border */
+    border-radius: 20px;
+    padding: 5px 10px;
+    margin: 5px 5px;
+}
+
+#custom-launcher,
+#wlr-taskbar,
+#tray,
+#clock,
+#custom-hub {
+    background-color: transparent;
+    color: #e1e4e8;
+    padding: 0 5px;
+    margin: 0;
+    border: none;
+    border-radius: 0;
+}
+
+#wlr-taskbar button.active {
+    background-color: #98c379;
+    /* Moss Green */
+    color: #1f2428;
+    /* Background */
+    border: none;
+}
+
+#wlr-taskbar button:hover {
+    background-color: #d19a66;
+    /* Magma Orange */
+    color: #1f2428;
+    border: none;
+}

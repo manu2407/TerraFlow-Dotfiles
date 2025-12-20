@@ -1,12 +1,32 @@
-#!/bin/bash
+#!/usr/bin/env bash
+set -euo pipefail
 
-# Project TerraFlow - Master Installation Script
+# ==============================================================================
+# TerraFlow Master Installer
+# ==============================================================================
+#
+# PHILOSOPHY:
+# 1. Authoritative: This script enforces state. It does not ask questions.
+# 2. Idempotent: Safe to run multiple times. Skips installed packages.
+# 3. Robust: Fails early on errors. Resolves conflicts aggressively.
+#
+# STRUCTURE:
+# 1. Preflight Checks & Conflict Removal
+# 2. Core System Utilities
+# 3. Fonts (Must be before UI)
+# 4. UI / Shell / GTK Components
+# 5. Optional Extras
+# 6. Configuration & Services
+#
+# ==============================================================================
 
 LOG_FILE="install.log"
 
+# --- Helper Functions ---
+
 log() {
-    echo -e "$1"
-    echo -e "$1" >> "$LOG_FILE"
+    echo -e ":: $1"
+    echo -e ":: $1" >> "$LOG_FILE"
 }
 
 error() {
@@ -15,117 +35,187 @@ error() {
     exit 1
 }
 
+# Safe Install Function
+# Uses 'yay' with --needed and --noconfirm to ensure idempotency and non-interactivity.
+install_group() {
+    local name="$1"
+    shift
+    local pkgs=("$@")
+
+    if [ ${#pkgs[@]} -eq 0 ]; then
+        log "No packages to install for group: $name"
+        return
+    fi
+
+    log "Installing Group: $name..."
+    # We use 'yes' pipe to force acceptance of key imports or other prompts that --noconfirm might miss
+    # We use --overwrite '*' to bulldoze file conflicts
+    yes | yay -S --needed --noconfirm --overwrite '*' "${pkgs[@]}" || {
+        error "Failed installing $name"
+    }
+}
+
+# --- 1. Preflight Checks ---
+
 log "Starting TerraFlow Installation..."
 
-# 1. Check Distro
+# Check Distro
 if ! grep -q "Arch" /etc/os-release && ! grep -q "CachyOS" /etc/os-release; then
     error "This script is intended for Arch Linux or CachyOS."
 fi
 
-# 2. Update System
+# Setup AUR Helper (yay)
+if ! command -v yay &> /dev/null; then
+    if command -v paru &> /dev/null; then
+        log "Using paru as AUR helper."
+        alias yay='paru'
+    else
+        log "No AUR helper found. Installing yay..."
+        yes | sudo pacman -S --needed git base-devel --noconfirm --overwrite '*'
+        git clone https://aur.archlinux.org/yay.git
+        cd yay
+        makepkg -si --noconfirm
+        cd ..
+        rm -rf yay
+    fi
+fi
+
+# Conflict Removal Logic
+# We aggressively remove known conflicting packages to prevent installation failures.
+FORBIDDEN_PKGS=(
+    "ttf-google-fonts-typewolf"
+    "ttf-ms-fonts"
+    "timeshift" # Explicitly removed as per user request
+)
+
+log "Checking for forbidden packages..."
+for pkg in "${FORBIDDEN_PKGS[@]}"; do
+    if pacman -Qi "$pkg" &>/dev/null; then
+        log "Removing conflicting package: $pkg"
+        sudo pacman -Rns --noconfirm "$pkg" || true
+    fi
+done
+
+# Update System First
 log "Updating system..."
 yes | sudo pacman -Syu --noconfirm --overwrite '*' || error "Failed to update system."
 
-# 3. Install Packages
-log "Installing packages from packages.txt..."
 
-# Check if yay or paru is installed for AUR packages
-if command -v yay &> /dev/null; then
-    AUR_HELPER="yay"
-elif command -v paru &> /dev/null; then
-    AUR_HELPER="paru"
-else
-    log "No AUR helper found. Installing yay..."
-    yes | sudo pacman -S --needed git base-devel --noconfirm --overwrite '*'
-    git clone https://aur.archlinux.org/yay.git
-    cd yay
-    makepkg -si --noconfirm
-    cd ..
-    rm -rf yay
-    AUR_HELPER="yay"
-fi
+# --- 2. Package Definitions ---
 
-# Read packages.txt, remove comments and empty lines
-if [ -f "packages.txt" ]; then
-    # Install packages using the helper
-    # We use sed to strip comments (#...) and empty lines
-    yes | $AUR_HELPER -S --needed --noconfirm --overwrite '*' $(sed 's/#.*//' packages.txt) || error "Failed to install packages."
-else
-    error "packages.txt not found!"
-fi
+# Core System & Hardware
+CORE_PKGS=(
+    # Window Manager & Core
+    "hyprland"
+    "xdg-desktop-portal-hyprland"
+    "xdg-desktop-portal-gtk"
+    "polkit-gnome"
+    "hyprlock"
+    "hypridle"
+    "swww"
+    
+    # Connectivity & Audio
+    "network-manager-applet"
+    "blueman"
+    "bluez"
+    "bluez-utils"
+    "pipewire"
+    "pipewire-pulse"
+    "pipewire-alsa"
+    "wireplumber"
+    "pavucontrol"
+    "brightnessctl"
+    
+    # Files & Archives
+    "thunar"
+    "thunar-archive-plugin"
+    "file-roller"
+    "unzip"
+    "p7zip"
+    "unrar"
+    "gvfs"
+    "gvfs-mtp"
+    "tumbler"
+    "ffmpegthumbnailer"
+    
+    # Clipboard & Screenshots
+    "wl-clipboard"
+    "cliphist"
+    "grim"
+    "slurp"
+    "swappy"
+    
+    # CLI Tools
+    "fish"
+    "starship"
+    "neovim"
+    "btop"
+    "fzf"
+    "bat"
+    "eza"
+    "zoxide"
+    "wget"
+    "jq"
+    "gum"
+    "imagemagick"
+    "wtype"
+)
 
-# 3.1 Docker Setup
+# Fonts (Strict Policy: Single-owner packages only)
+FONT_PKGS=(
+    "ttf-inter"
+    "ttf-iosevka-nerd"
+    "noto-fonts"
+    "noto-fonts-cjk"
+    "noto-fonts-emoji"
+)
+
+# UI Components (Must be installed AFTER fonts)
+UI_PKGS=(
+    "waybar"
+    "dunst"
+    "sddm"
+    "nwg-look"
+    "qt5ct"
+    "qt6ct"
+    "nwg-drawer"
+    "aylurs-gtk-shell-git"
+    "rofi-wayland"
+    "wlogout"
+    "kitty" # Terminal is UI
+    "mpv"
+    "imv"
+)
+
+# Optional Extras
+EXTRA_PKGS=(
+    "zen-browser-bin"
+    "obsidian"
+    "yazi"
+    "docker"
+    "lazydocker"
+    "distrobox"
+    "code"
+    "lazygit"
+    "hyprshot"
+)
+
+
+# --- 3. Installation Execution ---
+
+install_group "Core System" "${CORE_PKGS[@]}"
+install_group "Fonts" "${FONT_PKGS[@]}"
+install_group "UI Components" "${UI_PKGS[@]}"
+install_group "Extras" "${EXTRA_PKGS[@]}"
+
+
+# --- 4. Configuration & Services ---
+
 log "Setting up Docker..."
-sudo systemctl enable docker
-sudo systemctl start docker
-sudo usermod -aG docker $USER
+sudo systemctl enable docker || true
+sudo systemctl start docker || true
+sudo usermod -aG docker "$USER" || true
 
-# 3.2 VS Code Extensions
-log "Installing VS Code extensions..."
-code --install-extension PKief.material-icon-theme
-code --install-extension enkia.tokyo-night
-code --install-extension shengchen.vscode-glassit
-code --install-extension usernamehw.errorlens
-
-# 3.3 MPV UOSC Script
-log "Installing MPV UOSC script..."
-mkdir -p ~/.config/mpv/scripts
-curl -L https://github.com/tomasklaen/uosc/releases/latest/download/uosc.zip -o uosc.zip
-unzip -o uosc.zip -d ~/.config/mpv/
-rm uosc.zip
-
-# 4. Install Assets
-install_assets() {
-    echo ":: [TerraFlow] Starting Asset Installation..."
-
-    # --- 1. PREPARE DIRECTORIES ---
-    mkdir -p "$HOME/.local/share/fonts"
-    mkdir -p "$HOME/.local/share/backgrounds/terra"
-    mkdir -p "$HOME/Downloads/terra_temp"
-
-    # --- 2. INSTALL FONTS (Direct Download) ---
-    echo ":: Downloading Fonts..."
-    
-    # Iosevka Nerd Font
-    wget -q --show-progress -O "$HOME/Downloads/terra_temp/Iosevka.zip" "https://github.com/ryanoasis/nerd-fonts/releases/download/v3.3.0/Iosevka.zip"
-    unzip -q -o "$HOME/Downloads/terra_temp/Iosevka.zip" -d "$HOME/.local/share/fonts"
-    
-    # Inter Font
-    wget -q --show-progress -O "$HOME/Downloads/terra_temp/Inter.zip" "https://github.com/rsms/inter/releases/download/v4.1/Inter-4.1.zip"
-    unzip -q -o "$HOME/Downloads/terra_temp/Inter.zip" -d "$HOME/Downloads/terra_temp/inter_extracted"
-    cp "$HOME/Downloads/terra_temp/inter_extracted/extras/ttf/"*.ttf "$HOME/.local/share/fonts/"
-
-    # Refresh Font Cache
-    echo ":: Refreshing Font Cache..."
-    fc-cache -fv &> /dev/null
-
-    # --- 3. INSTALL WALLPAPER ---
-    echo ":: Downloading Wallpaper..."
-    
-    # Direct link to the Topographic Dark Wallpaper
-    WALLPAPER_URL="https://raw.githubusercontent.com/LpCodes/wallpaper/master/Abstract/topography.png"
-    wget -q --show-progress -O "$HOME/.local/share/backgrounds/terra/wallpaper.png" "$WALLPAPER_URL"
-
-    # --- 4. GENERATE LOCKSCREEN (Blur Effect) ---
-    # We use ImageMagick to create the blurred version automatically
-    echo ":: Generating Blurred Lockscreen..."
-    if command -v magick &> /dev/null; then
-        magick "$HOME/.local/share/backgrounds/terra/wallpaper.png" \
-        -blur 0x25 \
-        "$HOME/.local/share/backgrounds/terra/wallpaper_blur.png"
-    else
-        echo "!! ImageMagick not found. Skipping blur generation."
-    fi
-
-    # --- 5. CLEANUP ---
-    rm -rf "$HOME/Downloads/terra_temp"
-    
-    echo ":: [TerraFlow] Assets Installed Successfully."
-}
-
-install_assets
-
-# 5. Link Configs
 log "Linking configurations..."
 CONFIG_DIR="$HOME/.config"
 mkdir -p "$CONFIG_DIR"
@@ -135,9 +225,13 @@ CONFIGS=("hypr" "waybar" "ags" "nwg-drawer" "kitty" "fish" "sddm" "yazi" "lazygi
 
 for config in "${CONFIGS[@]}"; do
     if [ -d "$CONFIG_DIR/$config" ]; then
-        log "Backing up existing $config..."
-        mv "$CONFIG_DIR/$config" "$CONFIG_DIR/${config}.bak"
+        # Only backup if it's not already a symlink to our repo
+        if [ ! -L "$CONFIG_DIR/$config" ]; then
+            log "Backing up existing $config..."
+            mv "$CONFIG_DIR/$config" "$CONFIG_DIR/${config}.bak"
+        fi
     fi
+    # Force link
     ln -sf "$(pwd)/configs/$config" "$CONFIG_DIR/$config"
 done
 
@@ -148,33 +242,36 @@ ln -sf "$(pwd)/configs/starship.toml" "$CONFIG_DIR/starship.toml"
 mkdir -p "$HOME/.local/bin"
 ln -sf "$(pwd)/scripts/terra-store" "$HOME/.local/bin/terra-store"
 
-# 6. Enable Services
 log "Enabling services..."
-sudo systemctl enable sddm
-sudo systemctl enable bluetooth
+sudo systemctl enable sddm || true
+sudo systemctl enable bluetooth || true
 
-# 7. Refresh App Menu
-refresh_app_menu() {
-    echo ":: [TerraFlow] Forcing App Menu Refresh..."
+# --- 5. Post-Install Assets ---
 
-    # 1. Update the System Database of Apps
-    sudo update-desktop-database -q
+install_assets() {
+    log "Starting Asset Installation..."
+    mkdir -p "$HOME/.local/share/fonts"
+    mkdir -p "$HOME/.local/share/backgrounds/terra"
     
-    # 2. Rebuild the Mime Type Cache (File associations)
-    sudo update-mime-database /usr/share/mime > /dev/null 2>&1
+    # Wallpaper
+    WALLPAPER_URL="https://raw.githubusercontent.com/LpCodes/wallpaper/master/Abstract/topography.png"
+    wget -q --show-progress -O "$HOME/.local/share/backgrounds/terra/wallpaper.png" "$WALLPAPER_URL" || true
 
-    # 3. Kill the Launcher Cache
-    rm -f ~/.cache/nwg-drawer/data
-    pkill wofi || true
-    rm -f ~/.cache/rofi/*
+    # Blur generation
+    if command -v magick &> /dev/null; then
+        magick "$HOME/.local/share/backgrounds/terra/wallpaper.png" \
+        -blur 0x25 \
+        "$HOME/.local/share/backgrounds/terra/wallpaper_blur.png" || true
+    fi
     
-    echo ":: Apps should now be visible!"
+    log "Assets Installed."
 }
 
-refresh_app_menu
+install_assets
 
-# 8. Finalize
+# --- 6. Finalize ---
+
 log "Applying GTK theme..."
-nwg-look -a # Apply settings if possible, or just open it.
+nwg-look -a || true
 
 log "Installation Complete! Please reboot."

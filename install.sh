@@ -98,18 +98,7 @@ install_group() {
     }
 }
 
-# Post-Install Cleanup
-# Removes any forbidden packages that may have been pulled in by AUR dependencies.
-postflight_cleanup() {
-    log "Running Post-Install Cleanup..."
-    for pkg in "${FORBIDDEN_PKGS[@]}"; do
-        if pacman -Qi "$pkg" &>/dev/null; then
-            log "Forbidden package '$pkg' was installed by a dependency. Removing..."
-            yes | sudo pacman -Rdd --noconfirm "$pkg" || true
-        fi
-    done
-    log "Post-install cleanup complete."
-}
+
 
 
 # ==============================================================================
@@ -252,9 +241,6 @@ install_group "Fonts" "${FONT_PKGS[@]}"
 install_group "UI Components" "${UI_PKGS[@]}"
 install_group "Extras" "${EXTRA_PKGS[@]}"
 
-
-# --- Post-Install Verification ---
-postflight_cleanup
 
 
 # --- Configuration & Services ---

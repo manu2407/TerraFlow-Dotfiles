@@ -81,10 +81,9 @@ install_group() {
     # --answerdiff None: don't show diffs
     # --answerclean None: don't clean build files
     # --answeredit None: don't edit PKGBUILDs
-    # --noupgrademenu: skip upgrade menu
     yay -S --needed --noconfirm --overwrite '*' \
         --answerdiff None --answerclean None --answeredit None \
-        --noupgrademenu "${pkgs[@]}" || {
+        "${pkgs[@]}" || {
         fatal "Failed installing group: $name"
     }
 }

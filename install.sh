@@ -86,6 +86,32 @@ Then re-run this installer."
     log "Preflight checks passed."
 }
 
+# AUR Dependency Gate
+# Checks if an AUR package depends on any forbidden packages.
+check_aur_deps() {
+    local pkgs=("$@")
+    local forbidden_pattern
+    forbidden_pattern=$(printf "|%s" "${FORBIDDEN_PKGS[@]}")
+    forbidden_pattern=${forbidden_pattern:1}
+
+    log "Checking AUR dependencies for policy violations..."
+    
+    # Check all packages in the group at once for efficiency
+    if yay -Si "${pkgs[@]}" 2>/dev/null | grep -E "Depends On|Optional Deps" | grep -qE "$forbidden_pattern"; then
+        # Identify the specific culprit for a better error message
+        for pkg in "${pkgs[@]}"; do
+            if yay -Si "$pkg" 2>/dev/null | grep -E "Depends On|Optional Deps" | grep -qE "$forbidden_pattern"; then
+                fatal "Package '$pkg' depends on a forbidden package.
+AUR dependency resolution would violate system policy.
+
+To proceed:
+  1. Choose an alternative package.
+  2. Or manually override the PKGBUILD to remove the dependency."
+            fi
+        done
+    fi
+}
+
 # Safe Install Function
 # All package installs MUST go through this function.
 install_group() {
@@ -97,6 +123,9 @@ install_group() {
         log "No packages to install for group: $name"
         return
     fi
+
+    # Enforce AUR dependency policy
+    check_aur_deps "${pkgs[@]}"
 
     log "Installing Group: $name..."
     yay -S --needed --noconfirm "${pkgs[@]}" || {
@@ -130,6 +159,10 @@ Manual intervention is required:
 # ==============================================================================
 
 log "Starting TerraFlow Installation..."
+
+# Force non-interactive AUR editing
+export YAY_EDITOR=cat
+export EDITOR=cat
 
 # --- 0. Preflight (MUST BE FIRST) ---
 preflight_check

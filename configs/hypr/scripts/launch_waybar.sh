@@ -8,5 +8,5 @@ pkill waybar
 # Wait a moment for cleanup
 sleep 0.5
 
-# Start Waybar
-waybar &
+# Start Waybar and log output
+waybar > /tmp/waybar.log 2>&1 &

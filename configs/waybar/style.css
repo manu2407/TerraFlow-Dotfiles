@@ -1,51 +1,168 @@
+/* TerraFlow Obsidian Glass - Waybar Theme */
+/* A premium glassmorphism theme */
+
+@define-color base #0d1117;
+@define-color surface #161b22;
+@define-color overlay #21262d;
+@define-color border #30363d;
+@define-color muted #484f58;
+@define-color text #e6edf3;
+@define-color text_dim #8b949e;
+@define-color accent #58a6ff;
+@define-color accent_alt #39d353;
+@define-color warn #f0883e;
+@define-color error #f85149;
+
 * {
     border: none;
     border-radius: 0;
-    font-family: "Inter", sans-serif;
-    font-size: 14px;
+    font-family: "Inter", "Iosevka Nerd Font", sans-serif;
+    font-size: 13px;
+    font-weight: 500;
     min-height: 0;
+    transition: all 0.2s ease;
 }
 
 window#waybar {
     background: transparent;
 }
 
-.modules-left,
-.modules-center,
+/* === LEFT MODULES === */
+.modules-left {
+    background: alpha(@base, 0.85);
+    border: 1px solid alpha(@border, 0.5);
+    border-radius: 12px;
+    padding: 0 4px;
+    margin: 4px 0 4px 4px;
+}
+
+#custom-launcher {
+    font-size: 18px;
+    color: @accent;
+    padding: 0 14px;
+    margin: 4px 2px;
+    border-radius: 8px;
+}
+
+#custom-launcher:hover {
+    background: alpha(@accent, 0.15);
+}
+
+#workspaces {
+    padding: 0 4px;
+}
+
+#workspaces button {
+    color: @text_dim;
+    padding: 4px 10px;
+    margin: 4px 2px;
+    border-radius: 8px;
+    background: transparent;
+}
+
+#workspaces button:hover {
+    color: @text;
+    background: alpha(@text, 0.08);
+}
+
+#workspaces button.active {
+    color: @base;
+    background: linear-gradient(135deg, @accent 0%, @accent_alt 100%);
+    font-weight: 600;
+}
+
+#workspaces button.urgent {
+    color: @base;
+    background: @error;
+}
+
+/* === CENTER MODULES === */
+.modules-center {
+    background: alpha(@base, 0.85);
+    border: 1px solid alpha(@border, 0.5);
+    border-radius: 12px;
+    padding: 0 16px;
+    margin: 4px;
+}
+
+#clock {
+    color: @text;
+    padding: 4px 8px;
+    font-weight: 600;
+}
+
+/* === RIGHT MODULES === */
 .modules-right {
-    background-color: #1f2428;
-    /* Dark background for contrast, or transparent if preferred */
-    border: 2px solid #98c379;
-    /* Moss Green Border */
-    border-radius: 20px;
-    padding: 5px 10px;
-    margin: 5px 5px;
+    background: alpha(@base, 0.85);
+    border: 1px solid alpha(@border, 0.5);
+    border-radius: 12px;
+    padding: 0 4px;
+    margin: 4px 4px 4px 0;
 }
 
-#custom-launcher,
-#wlr-taskbar,
 #tray,
-#clock,
-#custom-hub {
-    background-color: transparent;
-    color: #e1e4e8;
-    padding: 0 5px;
-    margin: 0;
-    border: none;
-    border-radius: 0;
+#pulseaudio,
+#network,
+#battery {
+    color: @text;
+    padding: 4px 12px;
+    margin: 4px 2px;
+    border-radius: 8px;
 }
 
-#wlr-taskbar button.active {
-    background-color: #98c379;
-    /* Moss Green */
-    color: #1f2428;
-    /* Background */
-    border: none;
+#tray:hover,
+#pulseaudio:hover,
+#network:hover,
+#battery:hover {
+    background: alpha(@text, 0.08);
 }
 
-#wlr-taskbar button:hover {
-    background-color: #d19a66;
-    /* Magma Orange */
-    color: #1f2428;
-    border: none;
+#pulseaudio.muted {
+    color: @muted;
+}
+
+#network.disconnected {
+    color: @muted;
+}
+
+#battery.warning {
+    color: @warn;
+}
+
+#battery.critical {
+    color: @error;
+    animation: pulse 1s ease-in-out infinite;
+}
+
+@keyframes pulse {
+
+    0%,
+    100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.5;
+    }
+}
+
+#custom-power {
+    font-size: 16px;
+    color: @error;
+    padding: 4px 14px;
+    margin: 4px 2px;
+    border-radius: 8px;
+}
+
+#custom-power:hover {
+    background: alpha(@error, 0.15);
+}
+
+/* Tray Menu */
+#tray>.passive {
+    -gtk-icon-effect: dim;
+}
+
+#tray>.needs-attention {
+    -gtk-icon-effect: highlight;
 }

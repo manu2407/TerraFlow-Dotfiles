@@ -1,144 +1,106 @@
 {
     "layer": "top",
     "position": "top",
-    "height": 44,
-    "margin-top": 6,
+    "mode": "dock",
+    "exclusive": true,
+    "passthrough": false,
+    "gtk-layer-shell": true,
+    "height": 42, /* Taller height for that chunky Material feel */
+    "spacing": 5,
+    "margin-top": 5,
     "margin-left": 10,
     "margin-right": 10,
-    "spacing": 0,
-    // Load Modules
     "modules-left": [
         "custom/launcher",
         "hyprland/workspaces",
-        "hyprland/window"
+        "cpu",
+        "memory",
+        "temperature"
     ],
     "modules-center": [
         "clock"
     ],
     "modules-right": [
         "tray",
-        "group/hardware",
         "pulseaudio",
         "network",
         "battery",
         "custom/power"
     ],
-    // --- MODULES CONFIGURATION ---
+    // --- Modules ---
     "custom/launcher": {
-        "format": "󰣇",
-        "on-click": "nwg-drawer",
+        "format": "  ",
+        "on-click": "rofi -show drun",
         "tooltip": false
     },
     "hyprland/workspaces": {
-        "format": "{icon}",
-        "format-icons": {
-            "1": "󰲠",
-            "2": "󰲢",
-            "3": "󰲤",
-            "4": "󰲦",
-            "5": "󰲨",
-            "active": "󰮯",
-            "default": "󰊠"
-        },
+        "disable-scroll": true,
+        "all-outputs": true,
         "on-click": "activate",
-        "persistent-workspaces": {
-            "*": 5
-        }
-    },
-    "hyprland/window": {
-        "format": "{}",
-        "max-length": 40,
-        "separate-outputs": true
-    },
-    "clock": {
-        "format": "󰥔  {:%H:%M}",
-        "format-alt": "󰃭  {:%A, %B %d}",
-        "tooltip-format": "<tt>{calendar}</tt>",
-        "calendar": {
-            "format": {
-                "today": "<span color='#58a6ff'><b>{}</b></span>"
-            }
-        }
-    },
-    // Group Hardware (CPU, RAM, Disk, Temp)
-    "group/hardware": {
-        "orientation": "horizontal",
-        "modules": [
-            "cpu",
-            "memory",
-            "temperature",
-            "disk"
-        ]
+        "persistent_workspaces": {
+            "1": [],
+            "2": [],
+            "3": []
+        },
+        "format": "{icon}"
     },
     "cpu": {
-        "format": "󰍛 {usage}%",
-        "interval": 2,
-        "on-click": "kitty --class system_monitor -e btop"
+        "format": " {usage}%",
+        "tooltip": true
     },
     "memory": {
-        "format": "󰘚 {percentage}%",
-        "interval": 2,
-        "on-click": "kitty --class system_monitor -e btop"
+        "format": " {percentage}%"
     },
     "temperature": {
-        "critical-threshold": 80,
-        "format": "󰔏 {temperatureC}°C",
-        "on-click": "kitty --class system_monitor -e btop"
+        "format": " {temperatureC}°C"
     },
-    "disk": {
-        "format": "󰋊 {percentage_used}%",
-        "path": "/",
-        "on-click": "thunar"
-    },
-    "tray": {
-        "icon-size": 18,
-        "spacing": 8
+    "clock": {
+        "format": "  {:%H:%M}",
+        "tooltip-format": "<big>{:%Y %B}</big>\n<tt><small>{calendar}</small></tt>"
     },
     "pulseaudio": {
         "format": "{icon} {volume}%",
-        "format-muted": "󰖁",
+        "format-muted": "  Muted",
         "format-icons": {
+            "headphone": "",
+            "hands-free": "",
+            "headset": "",
+            "phone": "",
+            "portable": "",
+            "car": "",
             "default": [
-                "󰕿",
-                "󰖀",
-                "󰕾"
+                "",
+                "",
+                ""
             ]
         },
-        "on-click": "pavucontrol",
-        "tooltip": false
+        "on-click": "pavucontrol"
     },
     "network": {
-        "format-wifi": "󰤨  {signalStrength}%",
-        "format-ethernet": "󰈀  {ipaddr}",
-        "format-disconnected": "󰤭",
-        "tooltip-format": "{essid} ({signalStrength}%)",
+        "format-wifi": "  {essid}",
+        "format-ethernet": "  Ethernet",
+        "format-disconnected": "睊 Disconnected",
         "on-click": "nm-connection-editor"
     },
     "battery": {
-        "format": "{icon} {capacity}%",
-        "format-charging": "󰂄 {capacity}%",
-        "format-plugged": "󰚥 {capacity}%",
-        "format-icons": [
-            "󰂎",
-            "󰁺",
-            "󰁻",
-            "󰁼",
-            "󰁽",
-            "󰁾",
-            "󰁿",
-            "󰂀",
-            "󰂁",
-            "󰂂",
-            "󰁹"
-        ],
         "states": {
+            "good": 95,
             "warning": 30,
             "critical": 15
-        }
+        },
+        "format": "{icon} {capacity}%",
+        "format-charging": " {capacity}%",
+        "format-icons": [
+            "",
+            "",
+            "",
+            "",
+            ""
+        ]
     },
     "custom/power": {
-        "format": "󰐥",
-        "on-click": "wlogout",
-        "tooltip": false
+        "format": "",
+        "tooltip": false,
+        "on-click": "wlogout"
     }
 }

@@ -1,200 +1,150 @@
-/* TerraFlow Obsidian Glass - Detailed Waybar Theme */
+/* -----------------------------------------------------
+   Material You Waybar Style
+   ----------------------------------------------------- */
 
-@import "colors.css";
+/* Import Matugen Dynamic Colors */
+@import "../../.config/hypr/themes/colors.conf";
+
+/* --- Fallback Variables (If colors.conf fails) --- */
+/* Uncomment these if you don't have matugen setup yet */
+/* @define-color primary #B4BEFE;
+@define-color secondary #89B4FA;
+@define-color surface0 #1e1e2e;
+@define-color surface1 #313244;
+@define-color text #CDD6F4;
+*/
 
 * {
-    border: none;
-    border-radius: 0;
-    font-family: "Inter", "Iosevka Nerd Font", sans-serif;
-    font-size: 13px;
-    font-weight: 600;
+    font-family: "JetBrainsMono Nerd Font", "Roboto", sans-serif;
+    font-size: 14px;
+    font-weight: bold;
     min-height: 0;
-    transition: all 0.2s ease;
 }
 
 window#waybar {
     background: transparent;
+    /* Essential for floating look */
 }
 
-/* === LEFT MODULES === */
-.modules-left {
-    background: alpha(@base, 0.85);
-    border: 1px solid alpha(@border, 0.5);
-    border-radius: 12px;
-    padding: 0 6px;
-    margin: 4px 0 4px 4px;
-}
-
-#custom-launcher {
-    font-size: 20px;
-    color: @accent;
-    padding: 2px 14px 2px 10px;
-    margin: 4px 2px;
-    border-radius: 8px;
-}
-
-#custom-launcher:hover {
-    background: alpha(@accent, 0.15);
-}
-
-#workspaces {
-    padding: 0 4px;
-}
-
-#workspaces button {
-    color: @text_dim;
-    padding: 4px 10px;
-    margin: 4px 2px;
-    border-radius: 8px;
-    background: transparent;
-}
-
-#workspaces button:hover {
-    color: @text;
-    background: alpha(@text, 0.08);
-}
-
-#workspaces button.active {
-    color: @base;
-    background: linear-gradient(135deg, @accent 0%, @accent_alt 100%);
-    font-weight: 700;
-    box-shadow: 0 2px 8px alpha(@accent, 0.3);
-}
-
-#workspaces button.urgent {
-    color: @base;
-    background: @error;
-}
-
-#window {
-    color: @text;
-    padding: 0 12px;
-    font-weight: 600;
-    opacity: 0.8;
-}
-
-/* === CENTER MODULES === */
-.modules-center {
-    background: alpha(@base, 0.85);
-    border: 1px solid alpha(@border, 0.5);
-    border-radius: 12px;
-    padding: 0 16px;
-    margin: 4px;
-}
-
-#clock {
-    color: @text;
-    padding: 4px 8px;
-    font-size: 14px;
-    font-weight: 700;
-}
-
-/* === RIGHT MODULES === */
-.modules-right {
-    background: alpha(@base, 0.85);
-    border: 1px solid alpha(@border, 0.5);
-    border-radius: 12px;
-    padding: 0 6px;
-    margin: 4px 4px 4px 0;
-}
-
-#tray {
-    padding: 0 12px;
-    margin: 4px 2px;
-}
-
-/* Hardware Group Styling */
-#hardware {
-    background: alpha(@surface, 0.5);
-    border-radius: 8px;
-    margin: 4px 6px;
-    padding: 2px 6px;
-    border: 1px solid alpha(@border, 0.3);
-}
-
-#cpu,
-#memory,
-#temperature,
-#disk {
-    color: @text_dim;
-    padding: 2px 8px;
-    border-radius: 6px;
-}
-
-#cpu:hover,
-#memory:hover,
-#temperature:hover,
-#disk:hover {
-    background: alpha(@text, 0.1);
-    color: @text;
-}
-
-#pulseaudio,
-#network,
-#battery {
-    color: @text;
-    padding: 4px 12px;
-    margin: 4px 2px;
-    border-radius: 8px;
-}
-
-#pulseaudio:hover,
-#network:hover,
-#battery:hover {
-    background: alpha(@text, 0.08);
-}
-
-#pulseaudio.muted {
-    color: @muted;
-}
-
-#network.disconnected {
-    color: @muted;
-}
-
-#battery.warning {
-    color: @warn;
-}
-
-#battery.critical {
-    color: @error;
-    animation: pulse 1s ease-in-out infinite;
-}
-
-@keyframes pulse {
-    0% {
-        opacity: 1;
-    }
-
-    50% {
-        opacity: 0.5;
-    }
-
-    100% {
-        opacity: 1;
-    }
-}
-
-#custom-power {
-    font-size: 18px;
-    color: @error;
-    padding: 4px 14px;
-    margin: 4px 2px;
-    border-radius: 8px;
-}
-
-#custom-power:hover {
-    background: alpha(@error, 0.15);
-}
-
-/* Tooltip Styling */
 tooltip {
-    background: alpha(@base, 0.95);
-    border: 1px solid @border;
-    border-radius: 12px;
+    background: @surface0;
+    border-radius: 15px;
+    border: 1px solid @primary;
 }
 
 tooltip label {
     color: @text;
-    padding: 8px;
+}
+
+/* --- THE PILLS (Common Styling) --- */
+#custom-launcher,
+#workspaces,
+#cpu,
+#memory,
+#temperature,
+#clock,
+#pulseaudio,
+#network,
+#battery,
+#tray,
+#custom-power {
+    background-color: @surface0;
+    color: @text;
+    border-radius: 20px;
+    /* The "Material Pill" shape */
+    padding: 8px 16px;
+    margin: 4px 0px;
+    margin-right: 6px;
+    /* Space between pills */
+    box-shadow: 2px 2px 0px 0px rgba(0, 0, 0, 0.2);
+    /* Subtle depth */
+}
+
+/* --- Specific Module Tweaks --- */
+
+/* Launcher: High contrast accent */
+#custom-launcher {
+    background-color: @primary;
+    color: @surface0;
+    /* Text color inverted on primary */
+    padding-right: 20px;
+    /* Visual balance */
+    margin-left: 0px;
+}
+
+/* Workspaces: The Active Pill */
+#workspaces button {
+    padding: 0px 5px;
+    color: @text;
+    background: transparent;
+}
+
+#workspaces button.active {
+    color: @primary;
+    background-color: transparent;
+    border-bottom: 2px solid @primary;
+    /* Minimal active indicator */
+}
+
+#workspaces button:hover {
+    color: @secondary;
+}
+
+/* Clock: Centerpiece */
+#clock {
+    background-color: @surface1;
+    /* Slightly lighter surface */
+    color: @primary;
+    font-size: 15px;
+}
+
+/* Hardware Info Group (CPU, Mem, Temp) */
+#cpu {
+    color: #f38ba8;
+    /* Redish tint for hardware */
+}
+
+#memory {
+    color: #fab387;
+    /* Orange tint */
+}
+
+#temperature {
+    color: #f9e2af;
+    /* Yellow tint */
+}
+
+/* Right Side Modules */
+#pulseaudio {
+    color: #89b4fa;
+    /* Blue */
+}
+
+#network {
+    color: #a6e3a1;
+    /* Green */
+}
+
+#battery {
+    color: #cba6f7;
+    /* Purple */
+}
+
+#battery.charging {
+    color: @text;
+    background-color: @primary;
+}
+
+#battery.critical {
+    background-color: #f38ba8;
+    /* Red warning */
+    color: #11111b;
+}
+
+/* Power Button */
+#custom-power {
+    background-color: #f38ba8;
+    color: #1e1e2e;
+    padding: 8px 14px;
+    margin-right: 0px;
 }

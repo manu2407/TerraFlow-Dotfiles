@@ -7,3 +7,11 @@ distrobox
 code
 lazygit
 hyprshot
+nm-connection-editor
+blueman
+pavucontrol
+playerctl
+hyprpicker
+grim
+slurp
+kooha

@@ -1,0 +1,5 @@
+ttf-inter
+ttf-iosevka-nerd
+noto-fonts
+noto-fonts-cjk
+noto-fonts-emoji

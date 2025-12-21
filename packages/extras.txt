@@ -1,0 +1,9 @@
+zen-browser-bin
+obsidian
+yazi
+docker
+lazydocker
+distrobox
+code
+lazygit
+hyprshot

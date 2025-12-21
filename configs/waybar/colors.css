@@ -1,0 +1,11 @@
+@define-color base #0d1117;
+@define-color surface #161b22;
+@define-color overlay #21262d;
+@define-color border #30363d;
+@define-color muted #484f58;
+@define-color text #e6edf3;
+@define-color text_dim #8b949e;
+@define-color accent #58a6ff;
+@define-color accent_alt #39d353;
+@define-color warn #f0883e;
+@define-color error #f85149;

@@ -2,122 +2,67 @@
 set -euo pipefail
 
 # ==============================================================================
-# TerraFlow Master Installer
-# ==============================================================================
-#
-# PHILOSOPHY:
-# 1. Determinism: This script either succeeds cleanly or fails early.
-# 2. Fail Loudly: Policy violations cause immediate abort, not auto-healing.
-# 3. One Owner:  Global resources (fonts, themes) have one explicit provider.
-#
-# WHY CERTAIN PACKAGES ARE FORBIDDEN:
-# Packages like 'ttf-google-fonts-typewolf' are meta-bundles that install
-# thousands of overlapping .ttf files. These conflict with explicit font
-# packages (e.g., ttf-opensans) that UI components may depend on.
-# The installer refuses to proceed on a system with such packages to prevent
-# unpredictable file-conflict errors during installation.
-#
-# WHY FONTS ARE HANDLED EXPLICITLY:
-# Fonts must be installed BEFORE any UI component that depends on them.
-# Implicit font installation via dependencies is forbidden because it hides
-# ownership and introduces silent conflicts.
-#
-# WHY THE INSTALLER REFUSES TO AUTO-HEAL:
-# Automatically removing packages is dangerous. It may break other software
-# the user has installed. The user MUST manually audit and remove the
-# conflicting package to acknowledge they understand the consequences.
-#
+# TerraFlow Master Installer (Level 2: Categorized Loader)
 # ==============================================================================
 
 LOG_FILE="install.log"
-
-# --- Forbidden Packages ---
-# These packages violate the single-owner policy for fonts and must not be
-# present on the system before running this installer.
-
+PACKAGES_DIR="packages"
 
 # --- Helper Functions ---
 
 log() {
-    echo -e ":: $1"
-    echo -e ":: $1" >> "$LOG_FILE"
+    echo -e "\e[32m[INFO]\e[0m $1"
+    echo -e "[INFO] $1" >> "$LOG_FILE"
+}
+
+warn() {
+    echo -e "\e[33m[WARN]\e[0m $1"
+    echo -e "[WARN] $1" >> "$LOG_FILE"
 }
 
 fatal() {
-    echo -e "\033[0;31m[FATAL] $1\033[0m"
+    echo -e "\e[31m[FATAL]\e[0m $1"
     echo -e "[FATAL] $1" >> "$LOG_FILE"
     exit 1
 }
 
-# --- Preflight Checks ---
-# These checks MUST run before ANY package installation.
+# Idempotent Install Function
+install_package() {
+    local pkg="$1"
 
-preflight_check() {
-    log "Running Preflight Checks..."
-
-    # Preflight checks passed.
-
-    log "Preflight checks passed."
-}
-
-# Safe Install Function
-# All package installs MUST go through this function.
-# Uses --overwrite '*' to bulldoze through any file conflicts.
-# Uses yay flags to skip optional dependencies and avoid prompts.
-install_group() {
-    local name="$1"
-    shift
-    local pkgs=("$@")
-
-    if [ ${#pkgs[@]} -eq 0 ]; then
-        log "No packages to install for group: $name"
-        return
+    # Check if installed via pacman
+    if pacman -Qi "$pkg" &> /dev/null; then
+        log "Skipping $pkg (already installed)"
+        return 0
     fi
 
-    log "Installing Group: $name..."
-    # --noconfirm: skip confirmation prompts
-    # --needed: skip already installed packages
-    # --overwrite '*': bulldoze file conflicts
-    # --answerdiff None: don't show diffs
-    # --answerclean None: don't clean build files
-    # --answeredit None: don't edit PKGBUILDs
-    yay -S --needed --noconfirm --overwrite '*' \
-        --answerdiff None --answerclean None --answeredit None \
-        "${pkgs[@]}" || {
-        fatal "Failed installing group: $name"
-    }
+    log "Installing $pkg..."
+    # Try pacman first, then AUR helper
+    if sudo pacman -S --noconfirm --needed "$pkg" 2>/dev/null; then
+        log "Installed $pkg via pacman"
+    else
+        log "Package not found in repos, trying AUR..."
+        yay -S --noconfirm --needed "$pkg" || fatal "Failed to install $pkg"
+    fi
 }
 
-
-
-
-# ==============================================================================
-# EXECUTION
-# ==============================================================================
+# --- Preflight Checks ---
 
 log "Starting TerraFlow Installation..."
-
-# Force non-interactive AUR editing
-export YAY_EDITOR=cat
-export EDITOR=cat
-
-# --- 0. Preflight (MUST BE FIRST) ---
-preflight_check
 
 # Check Distro
 if ! grep -q "Arch" /etc/os-release && ! grep -q "CachyOS" /etc/os-release; then
     fatal "This script is intended for Arch Linux or CachyOS."
 fi
 
-# Setup AUR Helper (yay)
+# Setup AUR Helper
 if ! command -v yay &> /dev/null; then
     if command -v paru &> /dev/null; then
         log "Using paru as AUR helper."
-        # Create an alias for this script's session
         yay() { paru "$@"; }
         export -f yay
     else
-        log "No AUR helper found. Installing yay..."
+        log "Installing yay..."
         sudo pacman -S --needed git base-devel --noconfirm
         git clone https://aur.archlinux.org/yay.git
         cd yay
@@ -131,107 +76,47 @@ fi
 log "Updating system..."
 sudo pacman -Syu --noconfirm || fatal "Failed to update system."
 
+# --- Package Installation ---
 
-# --- Package Definitions ---
+# Check for CachyOS
+IS_CACHYOS=false
+if grep -q "CachyOS" /etc/os-release; then
+    IS_CACHYOS=true
+    log "CachyOS detected! Optimizations enabled."
+fi
 
-# Core System & Hardware (Order: 1)
-CORE_PKGS=(
-    "hyprland"
-    "xdg-desktop-portal-hyprland"
-    "xdg-desktop-portal-gtk"
-    "polkit-gnome"
-    "hyprlock"
-    "hypridle"
-    "swww"
-    "network-manager-applet"
-    "blueman"
-    "bluez"
-    "bluez-utils"
-    "pipewire"
-    "pipewire-pulse"
-    "pipewire-alsa"
-    "wireplumber"
-    "pavucontrol"
-    "brightnessctl"
-    "thunar"
-    "thunar-archive-plugin"
-    "file-roller"
-    "unzip"
-    "p7zip"
-    "unrar"
-    "gvfs"
-    "gvfs-mtp"
-    "tumbler"
-    "ffmpegthumbnailer"
-    "wl-clipboard"
-    "cliphist"
-    "grim"
-    "slurp"
-    "swappy"
-    "fish"
-    "starship"
-    "neovim"
-    "btop"
-    "fzf"
-    "bat"
-    "eza"
-    "zoxide"
-    "wget"
-    "jq"
-    "gum"
-    "imagemagick"
-    "wtype"
-)
+# Function to load and install packages from a file
+install_from_file() {
+    local file="$1"
+    local category_name=$(basename "$file" .txt)
+    
+    if [ ! -f "$file" ]; then
+        warn "Package file not found: $file"
+        return
+    fi
 
-# Fonts (Order: 2 - MUST be before UI)
-# Explicit font ownership. No meta-bundles allowed.
-FONT_PKGS=(
-    "ttf-inter"
-    "ttf-iosevka-nerd"
-    "noto-fonts"
-    "noto-fonts-cjk"
-    "noto-fonts-emoji"
-)
+    log "Processing category: $category_name"
+    
+    # Read file line by line
+    while IFS= read -r pkg || [ -n "$pkg" ]; do
+        # Skip empty lines and comments
+        [[ -z "$pkg" || "$pkg" =~ ^# ]] && continue
+        
+        # CachyOS Swap Logic
+        if [ "$IS_CACHYOS" = true ] && [ "$pkg" = "hyprland" ]; then
+            pkg="hyprland-cachyos-git"
+            log "Swapped hyprland for hyprland-cachyos-git"
+        fi
 
-# UI Components (Order: 3 - After fonts)
-UI_PKGS=(
-    "waybar"
-    "dunst"
-    "sddm"
-    "nwg-look"
-    "qt5ct"
-    "qt6ct"
-    "nwg-drawer"
-    "aylurs-gtk-shell-git"
-    "rofi-wayland"
-    "wlogout"
-    "kitty"
-    "mpv"
-    "imv"
-)
+        install_package "$pkg"
+    done < "$file"
+}
 
-# Optional Extras (Order: 4)
-EXTRA_PKGS=(
-    "zen-browser-bin"
-    "obsidian"
-    "yazi"
-    "docker"
-    "lazydocker"
-    "distrobox"
-    "code"
-    "lazygit"
-    "hyprshot"
-)
-
-
-# --- Installation ---
-
-install_group "Core System" "${CORE_PKGS[@]}"
-install_group "Fonts" "${FONT_PKGS[@]}"
-install_group "UI Components" "${UI_PKGS[@]}"
-install_group "Extras" "${EXTRA_PKGS[@]}"
-
-
+# Install Categories
+install_from_file "$PACKAGES_DIR/core.txt"
+install_from_file "$PACKAGES_DIR/fonts.txt"
+install_from_file "$PACKAGES_DIR/ui.txt"
+install_from_file "$PACKAGES_DIR/extras.txt"
 
 # --- Configuration & Services ---
 
@@ -263,28 +148,24 @@ log "Enabling services..."
 sudo systemctl enable sddm || true
 sudo systemctl enable bluetooth || true
 
-
 # --- Assets ---
 
-install_assets() {
-    log "Starting Asset Installation..."
-    mkdir -p "$HOME/.local/share/fonts"
-    mkdir -p "$HOME/.local/share/backgrounds/terra"
-    
-    WALLPAPER_URL="https://raw.githubusercontent.com/LpCodes/wallpaper/master/Abstract/topography.png"
-    wget -q --show-progress -O "$HOME/.local/share/backgrounds/terra/wallpaper.png" "$WALLPAPER_URL" || true
+log "Installing Assets..."
+mkdir -p "$HOME/.local/share/fonts"
+mkdir -p "$HOME/.local/share/backgrounds/terra"
 
-    if command -v magick &> /dev/null; then
+WALLPAPER_URL="https://raw.githubusercontent.com/LpCodes/wallpaper/master/Abstract/topography.png"
+if [ ! -f "$HOME/.local/share/backgrounds/terra/wallpaper.png" ]; then
+    wget -q --show-progress -O "$HOME/.local/share/backgrounds/terra/wallpaper.png" "$WALLPAPER_URL" || true
+fi
+
+if command -v magick &> /dev/null; then
+    if [ ! -f "$HOME/.local/share/backgrounds/terra/wallpaper_blur.png" ]; then
         magick "$HOME/.local/share/backgrounds/terra/wallpaper.png" \
         -blur 0x25 \
         "$HOME/.local/share/backgrounds/terra/wallpaper_blur.png" || true
     fi
-    
-    log "Assets Installed."
-}
-
-install_assets
-
+fi
 
 # --- Finalize ---
 

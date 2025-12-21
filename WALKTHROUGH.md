@@ -1,73 +1,126 @@
-# TerraFlow Walkthrough & User Guide
+# TerraFlow Modular Upgrade Walkthrough
 
-Welcome to **TerraFlow**! This guide covers the essential keybindings and features.
+I have successfully upgraded your TerraFlow dotfiles to a "Gold Standard" modular architecture.
 
-## 🔑 Essential Keybindings
+## 1. Modular Hyprland Configuration
 
-The **Mod** key is **Super** (Windows key).
+Your `hyprland.conf` is now a clean entry point that sources atomic modules.
 
-| Key | Action |
-|-----|--------|
-| `Super + Return` | Open Terminal (Kitty) |
-| `Super + Q` | Close active window |
-| `Super + Space` | App Launcher (nwg-drawer) |
-| `Super + E` | File Manager (Thunar) |
-| `Super + F` | Toggle Fullscreen |
-| `Super + T` | Task Manager (btop) |
-| `Super + V` | Paste (smart paste script) |
-| `Super + Ctrl + V` | Clipboard History |
-| `Super + Escape` | Power Menu (wlogout) |
-| `Super + Alt + Space` | Dashboard (AGS) |
-| `Print` | Screenshot (region) |
+**Directory Structure:**
+```text
+~/.config/hypr/
+├── hyprland.conf           # Entry point
+├── modules/                # Atomic configurations
+│   ├── monitors.conf       # Monitor settings
+│   ├── input.conf          # Keyboard/Mouse
+│   ├── keybinds.conf       # Keybindings
+│   ├── windows.conf        # Window rules
+│   ├── decoration.conf     # Visuals (blur, shadow)
+│   ├── general.conf        # Layout, gaps, borders
+│   └── startup.conf        # Autostart commands
+└── themes/                 # Theme configurations
+    ├── colors.conf         # Generated colors
+    └── theme.conf          # Static theme settings
+```
 
-### Window Navigation
-| Key | Action |
-|-----|--------|
-| `Super + ←/→/↑/↓` | Move focus |
-| `Super + H/J/K/L` | Move focus (Vim-style) |
-| `Super + Mouse Left` | Drag window |
-| `Super + Mouse Right` | Resize window |
+## 2. Dynamic Theme Engine & Material You Waybar
 
-### Workspaces
-| Key | Action |
-|-----|--------|
-| `Super + 1-0` | Switch to workspace 1-10 |
-| `Super + Shift + 1-0` | Move window to workspace |
-| `Super + Scroll` | Cycle workspaces |
+I have implemented a theme engine using `matugen` and a **Material You** design for Waybar.
 
----
+**How to use:**
+```bash
+~/.config/hypr/scripts/theme-switcher.sh /path/to/your/wallpaper.jpg
+```
 
-## 🌟 Features
+**What happens:**
+1.  **Hyprland**: Updates border colors and variables.
+2.  **Waybar**: Updates bar colors (background, text, accent) to match the wallpaper.
+    -   **Design**: Features floating "pill" modules, dynamic pastel colors, and a clean, detached look.
+3.  **System**: Reloads Hyprland and Waybar automatically.
 
-### Waybar (Top Bar)
-- **Workspaces**: Click or scroll to switch
-- **Clock**: Click for calendar, Alt-click for date
-- **Tray**: System tray icons
-- **Volume/Network/Battery**: Status indicators
+## 3. AGS (Aylur's GTK Shell) Integration
 
-### App Launcher
-Press `Super + Space` to open **nwg-drawer** - a beautiful full-screen app grid.
+I have restructured your AGS config into a modular widget system.
 
-### Terminal (Kitty + Fish)
-- **Fish shell** with autosuggestions
-- **Starship** prompt
-- Modern color scheme
+**New Structure:**
+```text
+~/.config/ags/
+├── config.js           # Imports widgets
+├── widget/
+│   ├── Bar.js          # Status Bar (Workspaces, Clock)
+│   └── Dashboard.js    # Control Center (Volume, Net, Media)
+```
 
-### Terra Store
-Run `terra-store` for an interactive package manager.
+    └── Dashboard.js    # Control Center (Volume, Net, Media)
+```
 
----
+## 4. Command Center v2.0
 
-## 🎨 Customization
+I have upgraded the dashboard to a full Command Center.
 
-### Wallpaper
-Replace `~/.local/share/backgrounds/terra/wallpaper.png` and reload Hyprland.
+**Keybinding:** `SUPER + S`
 
-### Config Locations
-- Hyprland: `~/.config/hypr/`
-- Waybar: `~/.config/waybar/`
-- Kitty: `~/.config/kitty/`
+**Features:**
+-   **Dynamic Configs:** Automatically finds and lists Hyprland modules.
+-   **Special Workspace:** Editors open in a dedicated, tiled "Special Workspace" layer.
+-   **Tools:** Includes Network, Media, Color Picker, and Screenshot tools.
+-   **Terra Store v2.0:** Integrated access to the custom package manager.
 
----
+## 5. Terra Store v2.0
 
-Enjoy TerraFlow! 🚀
+A custom TUI package manager wrapper for `pacman` and `paru`.
+
+**Features:**
+-   **Pre-Authentication:** Handles sudo upfront for uninterrupted browsing.
+-   **Silent Install:** Fast, auto-confirm installations.
+-   **Visuals:** Clean, theme-aware interface using `gum`.
+
+## 6. Smart Updater
+
+I have included a "Safety Valve" updater script to handle git conflicts.
+
+**How to use:**
+```bash
+./scripts/update.sh
+```
+
+**Logic:**
+1.  **Checks for local changes.**
+2.  **If clean:** Updates automatically.
+3.  **If dirty:** Prompts you to **overwrite** local changes or **cancel**.
+
+## 7. Natural Language Commands
+
+I have added a smart `update` function to your shell.
+
+**Commands:**
+-   `update full`: Runs a full system upgrade (`paru -Syu` or `yay -Syu`).
+-   `update dot`: Updates your dotfiles with the "Smart Safety Check".
+
+## 8. Categorized Installation System (Level 2)
+
+I have refactored the installation system to be **idempotent** and **modular**.
+
+**New Structure:**
+```text
+TerraFlow/
+├── install.sh              # The main script (Logic)
+└── packages/               # Package Lists (Data)
+    ├── core.txt            # Core system packages
+    ├── fonts.txt           # Fonts
+    ├── ui.txt              # UI components
+    └── extras.txt          # Extra apps
+```
+
+**Features:**
+-   **Idempotent**: Checks if a package is installed before trying to install it. Safe to run multiple times.
+-   **CachyOS Aware**: Automatically swaps `hyprland` for `hyprland-cachyos-git` if running on CachyOS.
+-   **AUR Support**: Automatically installs `yay` if missing and uses it for AUR packages.
+
+## Verification
+
+To verify everything is working:
+1.  **Reload Hyprland**: `hyprctl reload` (should happen automatically).
+2.  **Test Theme Switcher**: Run the script with an image.
+3.  **Check AGS**: Ensure the bar and dashboard load.
+4.  **Test Installer**: Run `./install.sh` (it should skip already installed packages).

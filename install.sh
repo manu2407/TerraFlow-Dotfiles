@@ -8,6 +8,11 @@ set -euo pipefail
 LOG_FILE="install.log"
 PACKAGES_DIR="packages"
 
+# --- Path Resolution (Critical Fix) ---
+# Get the absolute path of the directory where this script is located
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+REPO_ROOT="$SCRIPT_DIR"
+
 # --- Helper Functions ---
 
 log() {
@@ -49,6 +54,12 @@ install_package() {
 # --- Preflight Checks ---
 
 log "Starting TerraFlow Installation..."
+
+# --- Sudo Keep-Alive ---
+# Ask for sudo upfront
+sudo -v
+# Keep sudo alive in the background while the script runs
+while true; do sudo -n true; sleep 60; kill -0 "$$" || exit; done 2>/dev/null &
 
 # Check Distro
 if ! grep -q "Arch" /etc/os-release && ! grep -q "CachyOS" /etc/os-release; then
@@ -113,10 +124,10 @@ install_from_file() {
 }
 
 # Install Categories
-install_from_file "$PACKAGES_DIR/core.txt"
-install_from_file "$PACKAGES_DIR/fonts.txt"
-install_from_file "$PACKAGES_DIR/ui.txt"
-install_from_file "$PACKAGES_DIR/extras.txt"
+install_from_file "$REPO_ROOT/$PACKAGES_DIR/core.txt"
+install_from_file "$REPO_ROOT/$PACKAGES_DIR/fonts.txt"
+install_from_file "$REPO_ROOT/$PACKAGES_DIR/ui.txt"
+install_from_file "$REPO_ROOT/$PACKAGES_DIR/extras.txt"
 
 # --- Configuration & Services ---
 
@@ -136,13 +147,13 @@ for config in "${CONFIGS[@]}"; do
         log "Backing up existing $config..."
         mv "$CONFIG_DIR/$config" "$CONFIG_DIR/${config}.bak"
     fi
-    ln -sf "$(pwd)/configs/$config" "$CONFIG_DIR/$config"
+    ln -sf "$REPO_ROOT/configs/$config" "$CONFIG_DIR/$config"
 done
 
-ln -sf "$(pwd)/configs/starship.toml" "$CONFIG_DIR/starship.toml"
+ln -sf "$REPO_ROOT/configs/starship.toml" "$CONFIG_DIR/starship.toml"
 
 mkdir -p "$HOME/.local/bin"
-ln -sf "$(pwd)/scripts/terra-store" "$HOME/.local/bin/terra-store"
+ln -sf "$REPO_ROOT/scripts/terra-store" "$HOME/.local/bin/terra-store"
 
 log "Enabling services..."
 sudo systemctl enable sddm || true
@@ -168,6 +179,15 @@ if command -v magick &> /dev/null; then
 fi
 
 # --- Finalize ---
+
+log "Generating initial theme..."
+if [ -f "$REPO_ROOT/configs/hypr/scripts/theme-switcher.sh" ]; then
+    chmod +x "$REPO_ROOT/configs/hypr/scripts/theme-switcher.sh"
+    # Run against the downloaded wallpaper
+    "$REPO_ROOT/configs/hypr/scripts/theme-switcher.sh" "$HOME/.local/share/backgrounds/terra/wallpaper.png"
+else
+    warn "Theme switcher script not found!"
+fi
 
 log "Applying GTK theme..."
 nwg-look -a || true

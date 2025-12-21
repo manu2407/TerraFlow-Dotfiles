@@ -1,35 +1,60 @@
 #!/bin/bash
 
 # Define Paths
-CONFIG_DIR="$HOME/.config/hypr/modules"
+HYPR_DIR="$HOME/.config/hypr"
+MODULES_DIR="$HYPR_DIR/modules"
+WAYBAR_DIR="$HOME/.config/waybar"
+KITTY_DIR="$HOME/.config/kitty"
+AGS_DIR="$HOME/.config/ags"
 
 # Main Menu Options
-# Use Icons (Nerd Fonts) if possible for "Setup", "Keybindings", etc.
-options="  Setup\n  Keybindings\n  System\n📦 Terra Store"
+options="⚙️  Configs\n🚀  Apps\n📦  Terra Store\n  Keybindings\n  System"
 
 # Rofi Execution
 chosen="$(echo -e "$options" | rofi -dmenu -p "Menu")"
 
 case $chosen in
-    "  Setup")
-        # Sub-menu logic
-        setup_choice="$(echo -e "Monitors\nInput\nWindows" | rofi -dmenu -p "Setup")"
-        if [[ $setup_choice == "Monitors" ]]; then
-             # LAUNCH COMMAND - Note the --class flag
-             kitty --class floating -e nvim "$CONFIG_DIR/monitors.conf"
-        elif [[ $setup_choice == "Input" ]]; then
-             kitty --class floating -e nvim "$CONFIG_DIR/input.conf"
-        elif [[ $setup_choice == "Windows" ]]; then
-             kitty --class floating -e nvim "$CONFIG_DIR/windows.conf"
-        fi
+    "⚙️  Configs")
+        # Configs Sub-menu
+        conf_choice="$(echo -e "Hyprland\nWaybar\nKitty\nAGS" | rofi -dmenu -p "Configs")"
+        case $conf_choice in
+            "Hyprland")
+                # Hyprland Sub-menu
+                hypr_choice="$(echo -e "Monitors\nInput\nWindows\nDecoration\nStartup" | rofi -dmenu -p "Hyprland")"
+                if [[ -n "$hypr_choice" ]]; then
+                    # Convert choice to lowercase for filename (Monitors -> monitors.conf)
+                    file="${hypr_choice,,}.conf"
+                    kitty -e nvim "$MODULES_DIR/$file"
+                fi
+                ;;
+            "Waybar")
+                kitty -e nvim "$WAYBAR_DIR/config.jsonc" "$WAYBAR_DIR/style.css"
+                ;;
+            "Kitty")
+                kitty -e nvim "$KITTY_DIR/kitty.conf"
+                ;;
+            "AGS")
+                kitty -e nvim "$AGS_DIR/config.js"
+                ;;
+        esac
+        ;;
+    "🚀  Apps")
+        app_choice="$(echo -e "Zen Browser\nFile Manager\nTerminal\nEditor\nFull Launcher" | rofi -dmenu -p "Apps")"
+        case $app_choice in
+            "Zen Browser") zen-browser ;;
+            "File Manager") thunar ;;
+            "Terminal") kitty ;;
+            "Editor") kitty -e nvim ;;
+            "Full Launcher") nwg-drawer ;;
+        esac
         ;;
     "  Keybindings")
-        kitty --class floating -e nvim "$CONFIG_DIR/keybinds.conf"
+        kitty -e nvim "$MODULES_DIR/keybinds.conf"
         ;;
     "  System")
-        kitty --class floating -e nvim "$CONFIG_DIR/general.conf"
+        kitty -e nvim "$MODULES_DIR/general.conf"
         ;;
-    "📦 Terra Store")
+    "📦  Terra Store")
         kitty --class floating -e terra-store
         ;;
 esac

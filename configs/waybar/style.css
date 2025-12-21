@@ -3,7 +3,7 @@
    ----------------------------------------------------- */
 
 /* Import Matugen Dynamic Colors */
-@import "../../.config/hypr/themes/colors.conf";
+@import "colors.css";
 
 /* --- Fallback Variables (If colors.conf fails) --- */
 /* Uncomment these if you don't have matugen setup yet */

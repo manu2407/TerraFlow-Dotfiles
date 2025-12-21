@@ -5,7 +5,7 @@
     "exclusive": true,
     "passthrough": false,
     "gtk-layer-shell": true,
-    "height": 42, /* Taller height for that chunky Material feel */
+    "height": 32, /* Compact height */
     "spacing": 5,
     "margin-top": 5,
     "margin-left": 10,

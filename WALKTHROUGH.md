@@ -35,7 +35,7 @@ I have implemented a theme engine using `matugen` and a **Material You** design 
 **What happens:**
 1.  **Hyprland**: Updates border colors and variables.
 2.  **Waybar**: Updates bar colors (background, text, accent) to match the wallpaper.
-    -   **Design**: Features floating "pill" modules, dynamic pastel colors, and a clean, detached look.
+    -   **Design**: Features **Compact Material** "pill" modules, dynamic pastel colors, and a slim 32px height.
 3.  **System**: Reloads Hyprland and Waybar automatically.
 
 ## 3. AGS (Aylur's GTK Shell) Integration

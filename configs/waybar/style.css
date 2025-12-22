@@ -2,7 +2,7 @@
    TerraFlow Waybar - Compact Material You
    ----------------------------------------------------- */
 
-@import "../../.config/hypr/themes/colors.conf";
+@import "../../.config/hypr/themes/colors.css";
 
 * {
     font-family: "JetBrainsMono Nerd Font", "Roboto", sans-serif;

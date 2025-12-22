@@ -5,11 +5,11 @@
     "exclusive": true,
     "passthrough": false,
     "gtk-layer-shell": true,
-    "height": 32, /* Compact height */
-    "spacing": 5,
-    "margin-top": 5,
-    "margin-left": 10,
-    "margin-right": 10,
+    "height": 26, /* Ultra Compact height */
+    "spacing": 4,
+    "margin-top": 2,
+    "margin-left": 6,
+    "margin-right": 6,
     "modules-left": [
         "custom/launcher",
         "hyprland/workspaces",

@@ -7,8 +7,8 @@
 * {
     font-family: "JetBrainsMono Nerd Font", "Roboto", sans-serif;
     font-weight: bold;
-    font-size: 12px;
-    /* Reduced from 14px */
+    font-size: 11px;
+    /* Reduced to 11px */
     min-height: 0;
 }
 
@@ -36,13 +36,13 @@ tooltip {
 #custom-power {
     background-color: @surface0;
     color: @text;
-    border-radius: 20px;
-    /* Smooth rounded corners */
-    padding: 3px 10px;
-    /* Balanced padding */
-    margin-top: 2px;
-    margin-bottom: 2px;
-    margin-right: 6px;
+    border-radius: 12px;
+    /* Tighter radius for small height */
+    padding: 1px 8px;
+    /* Ultra compact padding */
+    margin-top: 1px;
+    margin-bottom: 1px;
+    margin-right: 4px;
     box-shadow: 1px 1px 0px 0px rgba(0, 0, 0, 0.1);
 }
 
@@ -51,7 +51,7 @@ tooltip {
 #custom-launcher {
     background-color: @primary;
     color: @surface0;
-    padding: 3px 12px;
+    padding: 1px 10px;
     margin-left: 0px;
 }
 
@@ -76,7 +76,7 @@ tooltip {
 #cpu,
 #memory,
 #temperature {
-    padding: 3px 10px;
+    padding: 1px 6px;
 }
 
 #cpu {

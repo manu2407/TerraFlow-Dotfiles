@@ -36,12 +36,12 @@ tooltip {
 #custom-power {
     background-color: @surface0;
     color: @text;
-    border-radius: 15px;
-    /* Slightly tighter radius */
-    padding: 4px 12px;
-    /* DRASTICALLY REDUCED PADDING */
-    margin-top: 4px;
-    margin-bottom: 4px;
+    border-radius: 20px;
+    /* Smooth rounded corners */
+    padding: 3px 10px;
+    /* Balanced padding */
+    margin-top: 2px;
+    margin-bottom: 2px;
     margin-right: 6px;
     box-shadow: 1px 1px 0px 0px rgba(0, 0, 0, 0.1);
 }
@@ -51,7 +51,7 @@ tooltip {
 #custom-launcher {
     background-color: @primary;
     color: @surface0;
-    padding: 4px 12px;
+    padding: 3px 12px;
     margin-left: 0px;
 }
 
@@ -76,7 +76,7 @@ tooltip {
 #cpu,
 #memory,
 #temperature {
-    padding: 4px 10px;
+    padding: 3px 10px;
 }
 
 #cpu {

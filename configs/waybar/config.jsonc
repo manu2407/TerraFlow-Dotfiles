@@ -1,5 +1,6 @@
 {
     "layer": "top",
+    "ipc": true,
     "position": "top",
     "mode": "dock",
     "exclusive": true,

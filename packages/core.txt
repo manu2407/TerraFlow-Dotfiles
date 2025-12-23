@@ -43,3 +43,4 @@ jq
 gum
 imagemagick
 wtype
+ripgrep

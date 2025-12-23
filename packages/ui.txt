@@ -4,7 +4,7 @@ sddm
 nwg-look
 qt5ct
 qt6ct
-nwg-drawer
+
 aylurs-gtk-shell-git
 rofi-wayland
 wlogout

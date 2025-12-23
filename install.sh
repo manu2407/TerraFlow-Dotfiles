@@ -192,4 +192,7 @@ fi
 log "Applying GTK theme..."
 nwg-look -a || true
 
+log "Setting up LazyVim..."
+"$REPO_ROOT/scripts/setup_lazyvim.sh" || warn "LazyVim setup failed."
+
 log "Installation Complete! Please reboot."

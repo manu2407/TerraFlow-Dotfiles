@@ -36,12 +36,16 @@ ShellRoot {
     }
     
     // OSD overlay (volume/brightness)
+    /*
     Loader {
         source: "modules/osd/Osd.qml"
     }
+    */
     
     // Notification center
+    /*
     Loader {
         source: "modules/notifications/NotificationCenter.qml"
     }
+    */
 }

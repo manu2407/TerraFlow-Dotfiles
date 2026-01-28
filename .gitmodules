@@ -1,0 +1,8 @@
+[submodule "theme/hypr-dots-type1"]
+	path = theme/hypr-dots-type1
+	url = https://github.com/MrVivekRajan/Hypr-Dots.git
+	branch = Type-1
+[submodule "theme/hypr-dots-type2"]
+	path = theme/hypr-dots-type2
+	url = https://github.com/MrVivekRajan/Hypr-Dots.git
+	branch = Type-2

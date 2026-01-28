@@ -6,3 +6,6 @@
 	path = theme/hypr-dots-type2
 	url = https://github.com/MrVivekRajan/Hypr-Dots.git
 	branch = Type-2
+[submodule "ghostty/shaders"]
+	path = ghostty/shaders
+	url = https://github.com/0xhckr/ghostty-shaders.git

@@ -12,6 +12,26 @@ echo "║           TERRAFLOW PACKAGE INSTALLER                    ║"
 echo "╚══════════════════════════════════════════════════════════╝"
 echo ""
 
+# Check for AUR helper
+if ! command -v paru &> /dev/null && ! command -v yay &> /dev/null; then
+    echo "⚠️  No AUR helper found (paru/yay). Installing paru-bin..."
+    echo "═══════════════════════════════════════════════════════"
+    
+    # Install prerequisites
+    sudo pacman -S --needed --noconfirm base-devel git
+    
+    # Clone and build paru-bin
+    cd /tmp
+    rm -rf paru-bin
+    git clone https://aur.archlinux.org/paru-bin.git
+    cd paru-bin
+    makepkg -si --noconfirm
+    
+    cd "$DOTFILES_DIR"
+    echo "✓ paru installed successfully"
+    echo ""
+fi
+
 # Check if terra-store is built
 if [ ! -f "$TERRA_STORE" ]; then
     echo "⚠️  Terra Store not built. Building now..."

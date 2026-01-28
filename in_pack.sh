@@ -12,9 +12,9 @@ echo "║           TERRAFLOW PACKAGE INSTALLER                    ║"
 echo "╚══════════════════════════════════════════════════════════╝"
 echo ""
 
-# Check for AUR helper
-if ! command -v paru &> /dev/null && ! command -v yay &> /dev/null; then
-    echo "⚠️  No AUR helper found (paru/yay). Installing paru-bin..."
+# Check for AUR helper (Enforce paru for best compatibility)
+if ! command -v paru &> /dev/null; then
+    echo "⚠️  paru not found (yay detected but paru is preferred). Installing paru-bin..."
     echo "═══════════════════════════════════════════════════════"
     
     # Install prerequisites

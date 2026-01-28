@@ -1,0 +1,17 @@
+hyprland
+xdg-desktop-portal-hyprland
+xdg-desktop-portal-gtk
+polkit-gnome
+hypridle
+hyprlock
+bluez
+bluez-utils
+blueman
+network-manager-applet
+pipewire
+pipewire-pulse
+pipewire-alsa
+wireplumber
+pavucontrol
+brightnessctl
+docker

@@ -14,32 +14,32 @@ gtk-titlebar = false
 cursor-style = bar
 cursor-style-blink = true
 
-# Colors (Catppuccin Mocha - will be overwritten by matugen)
-background = 1e1e2e
-foreground = cdd6f4
-cursor-color = f5e0dc
-selection-background = 45475a
-selection-foreground = cdd6f4
+# Colors (CuteCat - Gruvbox Dark)
+background = 1d2021
+foreground = ebdbb2
+cursor-color = fbf1c7
+selection-background = 504945
+selection-foreground = ebdbb2
 
-# Normal colors
-palette = 0=#45475a
-palette = 1=#f38ba8
-palette = 2=#a6e3a1
-palette = 3=#f9e2af
-palette = 4=#89b4fa
-palette = 5=#f5c2e7
-palette = 6=#94e2d5
-palette = 7=#bac2de
+# Normal colors (Gruvbox)
+palette = 0=#1d2021
+palette = 1=#fb4934
+palette = 2=#b8bb26
+palette = 3=#fabd2f
+palette = 4=#83a598
+palette = 5=#d3869b
+palette = 6=#8ec07c
+palette = 7=#ebdbb2
 
 # Bright colors
-palette = 8=#585b70
-palette = 9=#f38ba8
-palette = 10=#a6e3a1
-palette = 11=#f9e2af
-palette = 12=#89b4fa
-palette = 13=#f5c2e7
-palette = 14=#94e2d5
-palette = 15=#a6adc8
+palette = 8=#928374
+palette = 9=#fb4934
+palette = 10=#b8bb26
+palette = 11=#fabd2f
+palette = 12=#83a598
+palette = 13=#d3869b
+palette = 14=#8ec07c
+palette = 15=#fbf1c7
 
 # Behavior
 copy-on-select = true

@@ -4,7 +4,7 @@ yazi
 docker
 lazydocker
 distrobox
-code
+antigravity
 lazygit
 hyprshot
 nm-connection-editor

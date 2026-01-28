@@ -1,0 +1,11 @@
+swww
+quickshell-git
+walker
+ghostty
+ttf-material-symbols-variable-git
+matugen-bin
+wlogout
+zen-browser-bin
+gum
+hyprshot
+antigravity

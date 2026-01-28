@@ -86,7 +86,7 @@ alias update="paru -Syu"
 alias cleanup="paru -Sc"
 
 # TerraFlow
-alias terra="~/TerraFlow-Dotfiles/terra-store/target/release/terra_store"
+alias store="~/TerraFlow-Dotfiles/terra-store/target/release/terra_store"
 
 # Quick edit
 alias zshrc="nvim ~/TerraFlow-Dotfiles/zsh/.zshrc"

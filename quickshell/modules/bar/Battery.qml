@@ -1,17 +1,18 @@
-// Battery.qml - Battery Status
+// Battery.qml - Battery Status (Connected to terra-shell)
 // TerraFlow Dotfiles
 
 import QtQuick
 import QtQuick.Layouts
+import "../services/TerraShellService.qml" as TerraShell
 import "../../config.qml" as Config
 
 RowLayout {
     id: battery
     spacing: 4
     
-    // TODO: Connect to terra-shell for battery data
-    property int level: 85
-    property bool charging: false
+    // Connected to terra-shell service
+    property int level: TerraShell.TerraShellService.batteryLevel
+    property bool charging: TerraShell.TerraShellService.batteryCharging
     
     Text {
         text: {

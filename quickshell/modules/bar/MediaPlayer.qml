@@ -1,19 +1,20 @@
-// MediaPlayer.qml - Now Playing
+// MediaPlayer.qml - Now Playing (Connected to terra-shell)
 // TerraFlow Dotfiles
 
 import QtQuick
 import QtQuick.Layouts
+import "../services/TerraShellService.qml" as TerraShell
 import "../../config.qml" as Config
 
 RowLayout {
     id: media
     spacing: 8
-    visible: title.length > 0
+    visible: TerraShell.TerraShellService.mediaTitle.length > 0
     
-    // TODO: Connect to terra-shell for MPRIS data
-    property string title: ""
-    property string artist: ""
-    property bool playing: false
+    // Connected to terra-shell service
+    property string title: TerraShell.TerraShellService.mediaTitle
+    property string artist: TerraShell.TerraShellService.mediaArtist
+    property bool playing: TerraShell.TerraShellService.mediaPlaying
     
     Text {
         text: media.playing ? "󰏤" : "󰐊"
@@ -24,9 +25,7 @@ RowLayout {
         MouseArea {
             anchors.fill: parent
             cursorShape: Qt.PointingHandCursor
-            onClicked: {
-                // Toggle play/pause via playerctl
-            }
+            onClicked: TerraShell.TerraShellService.mediaToggle()
         }
     }
     

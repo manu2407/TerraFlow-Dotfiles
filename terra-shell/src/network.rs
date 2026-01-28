@@ -1,54 +1,48 @@
 //! Network monitoring module
 
 use std::process::Command;
+use std::sync::Arc;
+use tokio::sync::RwLock;
 use tokio::time::{interval, Duration};
 use tracing::debug;
 
-/// Network status
-#[derive(Debug, Clone, serde::Serialize)]
-pub struct NetworkInfo {
-    pub connected: bool,
-    pub ssid: Option<String>,
-    pub strength: Option<u8>,
-}
+use crate::AppState;
 
 /// Monitor network status
-pub async fn monitor() {
+pub async fn monitor(state: Arc<RwLock<AppState>>) {
     let mut interval = interval(Duration::from_secs(5));
     
     loop {
         interval.tick().await;
         
-        if let Some(info) = get_wifi_info() {
-            debug!("Network: {:?}", info);
-            // TODO: Broadcast to connected clients
+        let (connected, ssid) = get_wifi_info();
+        let mut s = state.write().await;
+        if s.wifi_connected != connected || s.wifi_ssid != ssid {
+            debug!("Network: connected={}, ssid={:?}", connected, ssid);
+            s.wifi_connected = connected;
+            s.wifi_ssid = ssid;
         }
     }
 }
 
 /// Get WiFi info from nmcli
-fn get_wifi_info() -> Option<NetworkInfo> {
-    let output = Command::new("nmcli")
-        .args(["-t", "-f", "ACTIVE,SSID,SIGNAL", "device", "wifi"])
+fn get_wifi_info() -> (bool, Option<String>) {
+    let output = match Command::new("nmcli")
+        .args(["-t", "-f", "ACTIVE,SSID", "device", "wifi"])
         .output()
-        .ok()?;
+    {
+        Ok(o) => o,
+        Err(_) => return (false, None),
+    };
     
     let stdout = String::from_utf8_lossy(&output.stdout);
     
     for line in stdout.lines() {
         let parts: Vec<&str> = line.split(':').collect();
-        if parts.len() >= 3 && parts[0] == "yes" {
-            return Some(NetworkInfo {
-                connected: true,
-                ssid: Some(parts[1].to_string()),
-                strength: parts[2].parse().ok(),
-            });
+        if parts.len() >= 2 && parts[0] == "yes" {
+            return (true, Some(parts[1].to_string()));
         }
     }
     
-    Some(NetworkInfo {
-        connected: false,
-        ssid: None,
-        strength: None,
-    })
+    (false, None)
 }

@@ -9,14 +9,11 @@ repository = "https://github.com/manu2407/TerraFlow-Dotfiles"
 
 [dependencies]
 # Async runtime
-tokio = { version = "1", features = ["full"] }
+tokio = { version = "1", features = ["full", "net", "io-util", "sync"] }
 
 # Serialization
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
-
-# Hyprland IPC
-hyprland = "0.4"
 
 # Directory paths
 dirs = "6.0"

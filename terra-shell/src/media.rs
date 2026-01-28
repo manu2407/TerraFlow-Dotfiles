@@ -1,63 +1,59 @@
 //! Media player control (MPRIS via playerctl)
 
 use std::process::Command;
+use std::sync::Arc;
+use tokio::sync::RwLock;
 use tokio::time::{interval, Duration};
 use tracing::debug;
 
-/// Media player status
-#[derive(Debug, Clone, serde::Serialize)]
-pub struct MediaInfo {
-    pub title: String,
-    pub artist: String,
-    pub album: String,
-    pub playing: bool,
-    pub position: u64,   // seconds
-    pub duration: u64,   // seconds
-}
+use crate::AppState;
 
 /// Monitor media players
-pub async fn monitor() {
+pub async fn monitor(state: Arc<RwLock<AppState>>) {
     let mut interval = interval(Duration::from_secs(1));
     
     loop {
         interval.tick().await;
         
-        if let Some(info) = get_media_info() {
-            debug!("Media: {} - {}", info.artist, info.title);
-            // TODO: Broadcast to connected clients
+        let (title, artist, playing) = get_media_info();
+        let mut s = state.write().await;
+        if s.media_title != title || s.media_artist != artist || s.media_playing != playing {
+            debug!("Media: {} - {} (playing: {})", artist, title, playing);
+            s.media_title = title;
+            s.media_artist = artist;
+            s.media_playing = playing;
         }
     }
 }
 
 /// Get current media info
-fn get_media_info() -> Option<MediaInfo> {
+fn get_media_info() -> (String, String, bool) {
     let status = Command::new("playerctl")
         .args(["status"])
-        .output()
-        .ok()?;
+        .output();
     
-    let status_str = String::from_utf8_lossy(&status.stdout).trim().to_string();
-    
-    if status_str.is_empty() || status_str == "No players found" {
-        return None;
-    }
+    let playing = match status {
+        Ok(out) => String::from_utf8_lossy(&out.stdout).trim() == "Playing",
+        Err(_) => false,
+    };
     
     let metadata = Command::new("playerctl")
-        .args(["metadata", "--format", "{{title}}\n{{artist}}\n{{album}}"])
-        .output()
-        .ok()?;
+        .args(["metadata", "--format", "{{title}}\\n{{artist}}"])
+        .output();
     
-    let metadata_str = String::from_utf8_lossy(&metadata.stdout);
-    let lines: Vec<&str> = metadata_str.lines().collect();
+    let (title, artist) = match metadata {
+        Ok(out) => {
+            let text = String::from_utf8_lossy(&out.stdout);
+            let lines: Vec<&str> = text.lines().collect();
+            (
+                lines.first().unwrap_or(&"").to_string(),
+                lines.get(1).unwrap_or(&"").to_string(),
+            )
+        }
+        Err(_) => (String::new(), String::new()),
+    };
     
-    Some(MediaInfo {
-        title: lines.get(0).unwrap_or(&"").to_string(),
-        artist: lines.get(1).unwrap_or(&"").to_string(),
-        album: lines.get(2).unwrap_or(&"").to_string(),
-        playing: status_str == "Playing",
-        position: 0,
-        duration: 0,
-    })
+    (title, artist, playing)
 }
 
 /// Play/pause toggle

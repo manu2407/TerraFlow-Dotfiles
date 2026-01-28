@@ -1,15 +1,18 @@
-// Workspaces.qml - Hyprland Workspace Indicator
+// Workspaces.qml - Hyprland Workspace Indicator (Connected to terra-shell)
 // TerraFlow Dotfiles
 
 import QtQuick
 import QtQuick.Layouts
 import Quickshell
-import Quickshell.Hyprland
+import "../services/TerraShellService.qml" as TerraShell
 import "../../config.qml" as Config
 
 RowLayout {
     id: workspaces
     spacing: 6
+    
+    // Active workspace from terra-shell
+    property int activeWorkspace: TerraShell.TerraShellService.activeWorkspace
     
     Repeater {
         // Show workspaces 1-10
@@ -18,18 +21,13 @@ RowLayout {
         Rectangle {
             required property int index
             property int workspaceId: index + 1
-            property bool isActive: Hyprland.activeWorkspace?.id === workspaceId
-            property bool hasWindows: Hyprland.workspaces.some(w => w.id === workspaceId && w.windows > 0)
+            property bool isActive: workspaceId === workspaces.activeWorkspace
             
             width: isActive ? 24 : 8
             height: 8
             radius: 4
             
-            color: {
-                if (isActive) return Config.accent
-                if (hasWindows) return Config.fgSecondary
-                return Config.bgTertiary
-            }
+            color: isActive ? Config.accent : Config.bgTertiary
             
             Behavior on width {
                 NumberAnimation { duration: Config.animDuration }
@@ -42,7 +40,7 @@ RowLayout {
             MouseArea {
                 anchors.fill: parent
                 cursorShape: Qt.PointingHandCursor
-                onClicked: Hyprland.dispatch("workspace", workspaceId)
+                onClicked: TerraShell.TerraShellService.dispatch("workspace", workspaceId)
             }
         }
     }

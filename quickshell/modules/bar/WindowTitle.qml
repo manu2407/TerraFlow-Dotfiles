@@ -1,14 +1,15 @@
-// WindowTitle.qml - Active Window Title
+// WindowTitle.qml - Active Window Title (Connected to terra-shell)
 // TerraFlow Dotfiles
 
 import QtQuick
-import Quickshell.Hyprland
+import "../services/TerraShellService.qml" as TerraShell
 import "../../config.qml" as Config
 
 Text {
     id: windowTitle
     
-    property string title: Hyprland.activeWindow?.title ?? ""
+    // Connected to terra-shell service
+    property string title: TerraShell.TerraShellService.windowTitle
     
     text: title.length > 50 ? title.substring(0, 47) + "..." : title
     color: Config.fgSecondary

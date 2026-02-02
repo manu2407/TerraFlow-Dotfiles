@@ -10,6 +10,11 @@ if pacman -Qi paru-bin &>/dev/null; then
     sudo pacman -Rns --noconfirm paru-bin
 fi
 
+if pacman -Qi paru-bin-debug &>/dev/null; then
+    echo "Removing conflicting paru-bin-debug..."
+    sudo pacman -Rns --noconfirm paru-bin-debug
+fi
+
 # Clean up
 sudo rm -rf /tmp/paru
 

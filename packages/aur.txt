@@ -8,4 +8,4 @@ wlogout
 zen-browser-bin
 gum
 hyprshot
-antigravity-bin
+antigravity

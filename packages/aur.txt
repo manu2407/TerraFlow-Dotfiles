@@ -1,11 +1,11 @@
 swww
 quickshell-git
-walker
+walker-bin
 ghostty
 ttf-material-symbols-variable-git
-matugen-bin
+matugen
 wlogout
 zen-browser-bin
 gum
 hyprshot
-antigravity
+antigravity-bin

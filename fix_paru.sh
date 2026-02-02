@@ -4,6 +4,12 @@ echo "Starting paru repair (Source Build)..."
 echo "Note: This will compile paru from source to link against your current system libraries."
 echo "This may take a few minutes."
 
+# Remove conflicting paru-bin if present
+if pacman -Qi paru-bin &>/dev/null; then
+    echo "Removing conflicting paru-bin..."
+    sudo pacman -Rns --noconfirm paru-bin
+fi
+
 # Clean up
 sudo rm -rf /tmp/paru
 

@@ -1,0 +1,14 @@
+# Rust build artifacts
+target/
+terra-store/target/
+terra-shell/target/
+
+# Editor files
+.vscode/
+*.swp
+*.swo
+
+# Temporary files
+*.tmp
+*.bak
+.DS_Store

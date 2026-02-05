@@ -1,97 +1,92 @@
 #!/bin/bash
-# install.sh - TerraFlow Dotfiles Symlink Installer
+# ═══════════════════════════════════════════════════════════════════════════════
+# TerraFlow Unified Installer
+# Modular installer - sources components from scripts/
+# ═══════════════════════════════════════════════════════════════════════════════
 
 set -e
 
 DOTFILES_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-CONFIG_DIR="$HOME/.config"
 
-echo "╔══════════════════════════════════════════════════════════╗"
-echo "║          TERRAFLOW DOTFILES INSTALLER                    ║"
-echo "╚══════════════════════════════════════════════════════════╝"
-echo ""
-echo "Dotfiles directory: $DOTFILES_DIR"
-echo ""
+# Source modules
+source "$DOTFILES_DIR/scripts/utils.sh"
+source "$DOTFILES_DIR/scripts/paru.sh"
+source "$DOTFILES_DIR/scripts/packages.sh"
+source "$DOTFILES_DIR/scripts/configs.sh"
+source "$DOTFILES_DIR/scripts/apps.sh"
 
-# Create backup directory
-BACKUP_DIR="$HOME/.config-backup-$(date +%Y%m%d-%H%M%S)"
-mkdir -p "$BACKUP_DIR"
+# ═══════════════════════════════════════════════════════════════════════════════
+# FULL INSTALL
+# ═══════════════════════════════════════════════════════════════════════════════
 
-# Function to create symlink with backup
-link() {
-    local src="$1"
-    local dest="$2"
-    
-    if [ -e "$dest" ] && [ ! -L "$dest" ]; then
-        echo "  ↪ Backing up existing: $dest"
-        mv "$dest" "$BACKUP_DIR/"
-    elif [ -L "$dest" ]; then
-        rm "$dest"
-    fi
-    
-    mkdir -p "$(dirname "$dest")"
-    ln -sf "$src" "$dest"
-    echo "  ✓ Linked: $dest"
+full_install() {
+    print_header "TERRAFLOW FULL INSTALLATION"
+    install_packages "$DOTFILES_DIR"
+    symlink_configs "$DOTFILES_DIR"
+    install_terra_apps "$DOTFILES_DIR"
+    echo ""
+    success "Installation complete! Log out and back into Hyprland."
 }
 
-echo "Creating symlinks..."
-echo ""
+# ═══════════════════════════════════════════════════════════════════════════════
+# MENU
+# ═══════════════════════════════════════════════════════════════════════════════
 
-# XDG Config directories
-echo "[Hyprland]"
-link "$DOTFILES_DIR/hyprland" "$CONFIG_DIR/hypr"
+show_menu() {
+    clear
+    echo -e "${CYAN}"
+    cat << 'EOF'
+╔══════════════════════════════════════════════════════════╗
+║        ████████╗███████╗██████╗ ██████╗  █████╗          ║
+║        ╚══██╔══╝██╔════╝██╔══██╗██╔══██╗██╔══██╗         ║
+║           ██║   █████╗  ██████╔╝██████╔╝███████║         ║
+║           ██║   ██╔══╝  ██╔══██╗██╔══██╗██╔══██║         ║
+║           ██║   ███████╗██║  ██║██║  ██║██║  ██║         ║
+║           ╚═╝   ╚══════╝╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝         ║
+║                     F L O W                              ║
+║              Unified Installer v2.0                      ║
+╚══════════════════════════════════════════════════════════╝
+EOF
+    echo -e "${NC}"
+    echo -e "  ${GREEN}1)${NC} Full Install"
+    echo -e "  ${BLUE}2)${NC} Packages Only"
+    echo -e "  ${BLUE}3)${NC} Configs Only"
+    echo -e "  ${BLUE}4)${NC} Terra Apps Only"
+    echo -e "  ${YELLOW}5)${NC} Fix Paru"
+    echo -e "  ${RED}0)${NC} Exit"
+    echo ""
+}
 
-echo "[Quickshell]"
-link "$DOTFILES_DIR/quickshell" "$CONFIG_DIR/quickshell"
+# ═══════════════════════════════════════════════════════════════════════════════
+# MAIN
+# ═══════════════════════════════════════════════════════════════════════════════
 
-echo "[Ghostty]"
-link "$DOTFILES_DIR/ghostty" "$CONFIG_DIR/ghostty"
+main() {
+    case "${1:-}" in
+        --full)      full_install; exit 0 ;;
+        --packages)  install_packages "$DOTFILES_DIR"; exit 0 ;;
+        --configs)   symlink_configs "$DOTFILES_DIR"; exit 0 ;;
+        --apps)      install_terra_apps "$DOTFILES_DIR"; exit 0 ;;
+        --fix-paru)  fix_paru; exit 0 ;;
+        -h|--help)
+            echo "Usage: ./install.sh [--full|--packages|--configs|--apps|--fix-paru]"
+            exit 0 ;;
+    esac
 
-echo "[Dunst]"
-link "$DOTFILES_DIR/dunst" "$CONFIG_DIR/dunst"
+    while true; do
+        show_menu
+        read -p "  Choice [0-5]: " choice
+        case $choice in
+            1) full_install ;;
+            2) install_packages "$DOTFILES_DIR" ;;
+            3) symlink_configs "$DOTFILES_DIR" ;;
+            4) install_terra_apps "$DOTFILES_DIR" ;;
+            5) fix_paru ;;
+            0) exit 0 ;;
+            *) error "Invalid option" ;;
+        esac
+        [[ $choice != 0 ]] && read -p "Press Enter..."
+    done
+}
 
-echo "[Yazi]"
-link "$DOTFILES_DIR/yazi" "$CONFIG_DIR/yazi"
-
-echo "[Btop]"
-link "$DOTFILES_DIR/btop" "$CONFIG_DIR/btop"
-
-echo "[MPV]"
-link "$DOTFILES_DIR/mpv" "$CONFIG_DIR/mpv"
-
-echo "[Walker]"
-link "$DOTFILES_DIR/walker" "$CONFIG_DIR/walker"
-
-echo "[Wlogout]"
-link "$DOTFILES_DIR/wlogout" "$CONFIG_DIR/wlogout"
-
-echo "[Neovim]"
-link "$DOTFILES_DIR/nvim" "$CONFIG_DIR/nvim"
-
-echo "[Starship]"
-link "$DOTFILES_DIR/starship/starship.toml" "$CONFIG_DIR/starship.toml"
-
-# Hyprlock and Hypridle (inside hypr directory)
-echo "[Hyprlock]"
-link "$DOTFILES_DIR/hyprlock/hyprlock.conf" "$CONFIG_DIR/hypr/hyprlock.conf"
-
-echo "[Hypridle]"
-link "$DOTFILES_DIR/hypridle/hypridle.conf" "$CONFIG_DIR/hypr/hypridle.conf"
-
-# Shell config (home directory)
-echo "[Zsh]"
-link "$DOTFILES_DIR/zsh/.zshrc" "$HOME/.zshrc"
-
-echo ""
-echo "══════════════════════════════════════════════════════════════"
-echo "✓ Installation complete!"
-echo ""
-echo "Backups saved to: $BACKUP_DIR"
-echo ""
-echo "Next steps:"
-echo "  1. Build terra-store:  cd terra-store && cargo build --release"
-echo "  2. Build terra-shell:  cd terra-shell && cargo build --release"
-echo "  3. Set wallpaper:      swww img theme/wallpapers/your-wallpaper.jpg"
-echo "  4. Log out and back in to Hyprland"
-echo "══════════════════════════════════════════════════════════════"
- 
+main "$@"
